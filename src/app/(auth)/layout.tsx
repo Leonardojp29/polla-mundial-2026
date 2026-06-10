@@ -23,10 +23,10 @@ export default function AuthLayout({ children }: { children: React.ReactNode }) 
         <div className="relative z-10 flex h-full flex-col justify-between p-12 text-white">
           <div className="flex items-center gap-3">
             <Image
-              src="/img/wc26-logo.svg"
-              alt="Copa Mundial FIFA 2026"
-              width={32}
-              height={49}
+              src="/img/lapolla-libero.webp"
+              alt="La Polla Líbero"
+              width={41}
+              height={48}
               className="h-12 w-auto drop-shadow"
             />
             <p className="text-xl font-black tracking-tight">Polla Mundial</p>
@@ -85,10 +85,10 @@ export default function AuthLayout({ children }: { children: React.ReactNode }) 
         <div className="w-full max-w-md">
           <div className="mb-6 flex flex-col items-center text-center lg:hidden">
             <Image
-              src="/img/wc26-logo.svg"
-              alt="Copa Mundial FIFA 2026"
-              width={40}
-              height={62}
+              src="/img/lapolla-libero.webp"
+              alt="La Polla Líbero"
+              width={48}
+              height={56}
               className="mb-2 h-14 w-auto"
             />
             <p className="text-3xl font-black tracking-tight">Polla Mundial</p>

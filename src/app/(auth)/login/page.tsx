@@ -3,7 +3,8 @@
 import { useActionState, useEffect, useState } from 'react';
 import Link from 'next/link';
 import { login, type AuthState } from '@/lib/actions/auth';
-import { GoogleButton } from '@/components/GoogleButton';
+// Google deshabilitado temporalmente (pendiente dominio corporativo / infra).
+// import { GoogleButton } from '@/components/GoogleButton';
 
 const field =
   'w-full rounded-lg border border-slate-300 px-3 py-2 outline-none focus:border-emerald-500 focus:ring-2 focus:ring-emerald-200';
@@ -79,6 +80,7 @@ export default function LoginPage() {
           {pending ? 'Entrando…' : 'Entrar'}
         </button>
 
+        {/* Google deshabilitado temporalmente (pendiente dominio corporativo / infra).
         <div className="flex items-center gap-3 text-xs text-slate-400">
           <span className="h-px flex-1 bg-slate-200" />
           o
@@ -86,6 +88,7 @@ export default function LoginPage() {
         </div>
 
         <GoogleButton />
+        */}
       </form>
 
       <p className="mt-4 text-center text-sm text-slate-600">

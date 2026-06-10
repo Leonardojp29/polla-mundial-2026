@@ -123,7 +123,7 @@ export default async function BienvenidaPage() {
         {/* Nav */}
         <header className="relative z-10 mx-auto flex w-full max-w-6xl items-center justify-between px-6 py-6">
           <span className="flex items-center gap-2.5">
-            <Image src="/img/wc26-logo.svg" alt="" width={24} height={37} className="h-8 w-auto" />
+            <Image src="/img/lapolla-libero.webp" alt="" width={27} height={32} className="h-8 w-auto" />
             <span className="text-base font-black tracking-tight">Polla Mundial</span>
           </span>
           <nav className="flex items-center gap-2">
@@ -542,7 +542,7 @@ export default async function BienvenidaPage() {
       <footer className="border-t border-white/5">
         <div className="mx-auto flex max-w-6xl flex-wrap items-center justify-between gap-4 px-6 py-8">
           <span className="flex items-center gap-2.5">
-            <Image src="/img/wc26-logo.svg" alt="" width={18} height={28} className="h-7 w-auto opacity-80" />
+            <Image src="/img/lapolla-libero.webp" alt="" width={24} height={28} className="h-7 w-auto opacity-80" />
             <span className="text-sm font-bold text-slate-400">
               Polla Mundial · Mundial 2026
             </span>

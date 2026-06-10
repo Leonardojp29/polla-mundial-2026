@@ -39,10 +39,10 @@ export default async function InvitacionPage({
     <main className="flex min-h-dvh flex-col items-center justify-center bg-gradient-to-br from-slate-950 via-emerald-950 to-slate-950 px-5 py-10 text-white">
       <div className="w-full max-w-md text-center">
         <Image
-          src="/img/wc26-logo.svg"
-          alt="Polla Mundial"
-          width={40}
-          height={62}
+          src="/img/lapolla-libero.webp"
+          alt="La Polla Líbero"
+          width={48}
+          height={56}
           className="mx-auto h-14 w-auto drop-shadow"
         />
         <p className="mt-3 text-lg font-black tracking-tight">Polla Mundial 2026</p>
@@ -89,7 +89,7 @@ export default async function InvitacionPage({
               a ninguna polla. Pide a tu amigo que te reenvíe el link.
             </p>
             <Link
-              href="/bienvenida"
+              href="/"
               className="mt-6 inline-block rounded-xl border border-white/15 px-6 py-3 text-sm font-bold transition hover:bg-white/10"
             >
               Conocer Polla Mundial →

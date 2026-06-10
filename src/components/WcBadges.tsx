@@ -32,15 +32,15 @@ export function BallBadge({ className = 'h-6 w-6' }: { className?: string }) {
   );
 }
 
-// Logo propio de la Polla Global (public/img/polla_logo_2026.png subido a
-// mano; aquí va la versión optimizada de 256px, con fondo transparente).
+// Escudo de La Polla Líbero (public/img/lapolla-libero.png subido a mano;
+// aquí va la versión optimizada de 256px, con fondo transparente).
 export function GlobalBadge({ className = 'h-7 w-7' }: { className?: string }) {
   return (
     // eslint-disable-next-line @next/next/no-img-element -- webp local diminuto
     <img
-      src="/img/wc26/polla-global.webp"
+      src="/img/lapolla-libero.webp"
       alt=""
-      width={256}
+      width={219}
       height={256}
       loading="lazy"
       decoding="async"

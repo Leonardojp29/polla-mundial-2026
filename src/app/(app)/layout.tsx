@@ -22,10 +22,10 @@ export default async function AppLayout({
         <div className="mx-auto flex h-14 w-full max-w-6xl items-center justify-between px-4 sm:px-6">
           <Link href="/" className="flex items-center gap-2.5">
             <Image
-              src="/img/wc26-logo.svg"
-              alt="Copa Mundial FIFA 2026"
-              width={26}
-              height={40}
+              src="/img/lapolla-libero.webp"
+              alt="La Polla Líbero"
+              width={31}
+              height={36}
               priority
               className="h-9 w-auto"
             />

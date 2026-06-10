@@ -45,11 +45,27 @@ export async function updateSession(request: NextRequest) {
   const path = request.nextUrl.pathname;
   const isPublic = PUBLIC_PATHS.some((p) => path === p || path.startsWith(p + '/'));
 
-  if (!user && !isPublic) {
-    const url = request.nextUrl.clone();
-    // La portada para visitantes es la landing; el resto pide login.
-    url.pathname = path === '/' ? '/bienvenida' : '/login';
-    return NextResponse.redirect(url);
+  if (!user) {
+    // La landing vive en la raíz del dominio: al visitante se le sirve
+    // /bienvenida sin cambiar la URL (rewrite, no redirect).
+    if (path === '/') {
+      const url = request.nextUrl.clone();
+      url.pathname = '/bienvenida';
+      const rewritten = NextResponse.rewrite(url, { request });
+      supabaseResponse.cookies.getAll().forEach((c) => rewritten.cookies.set(c));
+      return rewritten;
+    }
+    // URL canónica única: los links viejos a /bienvenida van a la raíz.
+    if (path === '/bienvenida') {
+      const url = request.nextUrl.clone();
+      url.pathname = '/';
+      return NextResponse.redirect(url);
+    }
+    if (!isPublic) {
+      const url = request.nextUrl.clone();
+      url.pathname = '/login';
+      return NextResponse.redirect(url);
+    }
   }
 
   // Un usuario logueado no necesita la landing.
