@@ -1,6 +1,11 @@
 import type { NextConfig } from "next";
 
 const nextConfig: NextConfig = {
+  experimental: {
+    serverActions: {
+      allowedOrigins: ['lapolla2026.libero.pe'],
+    },
+  },
   images: {
     // Escudos oficiales de football-data: pasan por el optimizador/caché de
     // Vercel en vez de pegarle a su CDN desde cada navegador.
