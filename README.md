@@ -95,7 +95,7 @@ node scripts/e2e.mjs   # valida alta de usuario, auto-inscripción, crear/unirse
 - **Banderas SVG locales** + imágenes con `Cache-Control: immutable` (1 año).
 - **Skeletons** (`loading.tsx`) para carga percibida instantánea + fuente con `swap`.
 
-## ¿Qué hay hecho (Fases 0–3)?
+## ¿Qué hay hecho (Fases 0–4 + sync)?
 
 - ✅ Registro / login con correo y contraseña (perfil profesional en `profiles`).
 - ✅ Auto-inscripción a la **Polla Global** al registrarse (trigger).
@@ -117,6 +117,9 @@ node scripts/e2e.mjs   # valida alta de usuario, auto-inscripción, crear/unirse
   puntaje se calcula progresivamente con lo ya decidido.
 - ✅ **Perfil** (`/perfil`): editar datos personales y cambiar contraseña.
 - ✅ Logo oficial del Mundial 2026 (emblema, vía Wikipedia — ver nota de marca).
+- ✅ **Sincronización automática de resultados** (football-data.org): partidos EN VIVO
+  con marcador parcial, finales con recálculo de puntos en todas las pollas y
+  asignación de equipos a los cruces (`npm run sync` / `sync:dry` / `sync:watch`).
 
 > **Nota de marca:** el emblema FIFA 2026 es marca registrada de FIFA. Para uso
 > privado entre amigos no hay problema práctico, pero si la app se publica
@@ -124,5 +127,7 @@ node scripts/e2e.mjs   # valida alta de usuario, auto-inscripción, crear/unirse
 
 ## Siguiente (Fase 5+)
 
-- Sincronización automática de resultados (API football-data.org como apoyo al admin).
-- PWA instalable + deploy (Supabase Cloud + Vercel).
+- Deploy: Supabase Cloud + Vercel (código ya en GitHub).
+- Recuperar contraseña (correo de reset).
+- PWA instalable.
+- Pronósticos de otros jugadores visibles tras el kickoff + realtime + estadísticas.
