@@ -78,16 +78,38 @@ export async function savePredictions(_prev: SaveState, formData: FormData): Pro
     });
   }
 
+  let replicated = 0;
   if (rows.length > 0) {
     const { error } = await supabase
       .from('predictions')
       .upsert(rows, { onConflict: 'pool_id,user_id,match_id' });
     if (error) return { error: `No se pudo guardar: ${error.message}` };
+
+    // Propagar a las DEMÁS pollas del usuario, solo donde aún no tiene
+    // pronóstico ("rellenar, nunca pisar"): después cada polla se edita
+    // por separado sin afectar a las otras.
+    const { data: memberships } = await supabase
+      .from('memberships')
+      .select('pool_id')
+      .eq('user_id', user.id)
+      .neq('pool_id', poolId);
+    for (const m of memberships ?? []) {
+      const copies = rows.map((r) => ({ ...r, pool_id: m.pool_id }));
+      const { data: inserted } = await supabase
+        .from('predictions')
+        .upsert(copies, { onConflict: 'pool_id,user_id,match_id', ignoreDuplicates: true })
+        .select('match_id');
+      replicated += inserted?.length ?? 0;
+    }
+
     revalidatePath(`/pollas/${poolId}`, 'layout');
+    revalidatePath('/', 'layout');
   }
 
   const parts: string[] = [];
   if (rows.length > 0) parts.push(`${rows.length} pronóstico${rows.length === 1 ? '' : 's'} guardado${rows.length === 1 ? '' : 's'}`);
+  if (replicated > 0)
+    parts.push(`${replicated} copiado${replicated === 1 ? '' : 's'} a tus otras pollas`);
   if (incomplete > 0) parts.push(`${incomplete} incompleto${incomplete === 1 ? '' : 's'} (faltó un marcador)`);
   if (locked > 0) parts.push(`${locked} ya cerrado${locked === 1 ? '' : 's'}`);
   if (rows.length === 0) return { error: parts.join(' · ') || 'Nada que guardar.' };
