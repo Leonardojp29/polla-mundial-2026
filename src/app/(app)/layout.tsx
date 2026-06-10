@@ -31,6 +31,12 @@ export default async function AppLayout({ children }: { children: React.ReactNod
             </span>
           </Link>
           <div className="flex items-center gap-3 text-sm">
+            <Link
+              href="/equipos"
+              className="hidden rounded-lg px-2.5 py-1.5 font-medium text-slate-500 transition hover:bg-slate-100 hover:text-slate-700 sm:inline"
+            >
+              Selecciones
+            </Link>
             {isAdmin && (
               <Link
                 href="/admin"

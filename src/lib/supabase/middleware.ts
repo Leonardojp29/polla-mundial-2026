@@ -2,7 +2,8 @@ import { createServerClient } from '@supabase/ssr';
 import { NextResponse, type NextRequest } from 'next/server';
 
 // Rutas públicas (sin sesión). El resto exige estar logueado.
-const PUBLIC_PATHS = ['/login', '/registro', '/recuperar', '/auth'];
+// /api/cron se protege solo (CRON_SECRET), no con sesión.
+const PUBLIC_PATHS = ['/login', '/registro', '/recuperar', '/auth', '/api/cron'];
 
 export async function updateSession(request: NextRequest) {
   let supabaseResponse = NextResponse.next({ request });
