@@ -6,6 +6,8 @@
     "dev": "next dev",
     "build": "next build",
     "start": "next start",
+    "pm2-server-dev": "pm2 start npm --name \"lapollalibero-dev-glr\" -- run dev",
+    "pm2-server-prod": "next build && pm2 start npm --name \"lapollalibero-prod-glr\" -- start",
     "lint": "eslint",
     "db:restart": "bash scripts/restart-supabase.sh",
     "db:seed": "node scripts/seed.mjs",

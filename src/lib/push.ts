@@ -9,7 +9,12 @@ export async function sendClosingNotifications(): Promise<number> {
   const pub = process.env.NEXT_PUBLIC_VAPID_PUBLIC_KEY;
   const priv = process.env.VAPID_PRIVATE_KEY;
   if (!pub || !priv) return 0;
-  webpush.setVapidDetails('mailto:leojuradop@gmail.com', pub, priv);
+  // Contacto que los servicios de push pueden usar ante abusos (configurable).
+  webpush.setVapidDetails(
+    process.env.VAPID_CONTACT ?? 'mailto:desarrolloweb@glr.pe',
+    pub,
+    priv,
+  );
 
   const svc = createClient(
     process.env.NEXT_PUBLIC_SUPABASE_URL!,
