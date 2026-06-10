@@ -1,0 +1,43 @@
+@import "tailwindcss";
+
+@theme inline {
+  --font-sans: var(--font-geist-sans);
+}
+
+body {
+  font-family: var(--font-geist-sans), Arial, Helvetica, sans-serif;
+}
+
+/* Los labels y textos de UI no deben comportarse como texto editable/seleccionable. */
+@layer base {
+  label {
+    user-select: none;
+  }
+  button:not(:disabled) {
+    cursor: pointer;
+  }
+}
+
+/* Scroll horizontal arrastrable con scrollbar propia (ver DragScroller.tsx). */
+.drag-scroll {
+  scrollbar-width: thin; /* Firefox */
+  scrollbar-color: #d1fae5 transparent;
+}
+.drag-scroll::-webkit-scrollbar {
+  height: 5px;
+}
+.drag-scroll::-webkit-scrollbar-track {
+  background: transparent;
+}
+.drag-scroll::-webkit-scrollbar-thumb {
+  background: #d1fae5; /* emerald-100 */
+  border-radius: 9999px;
+}
+.drag-scroll:hover::-webkit-scrollbar-thumb {
+  background: #34d399; /* emerald-400 */
+}
+/* Que las banderas no se "arrastren" como imágenes al hacer drag. */
+.drag-scroll img {
+  -webkit-user-drag: none;
+  user-select: none;
+}

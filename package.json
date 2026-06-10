@@ -1,0 +1,35 @@
+{
+  "name": "polla-mundial",
+  "version": "0.1.0",
+  "private": true,
+  "scripts": {
+    "dev": "next dev",
+    "build": "next build",
+    "start": "next start",
+    "lint": "eslint",
+    "db:restart": "bash scripts/restart-supabase.sh",
+    "db:seed": "node scripts/seed.mjs",
+    "sync": "node scripts/sync-results.mjs",
+    "sync:dry": "node scripts/sync-results.mjs --dry",
+    "sync:watch": "node scripts/sync-results.mjs --watch",
+    "test:e2e": "node scripts/e2e.mjs"
+  },
+  "dependencies": {
+    "@supabase/ssr": "^0.12.0",
+    "@supabase/supabase-js": "^2.108.1",
+    "next": "16.2.7",
+    "react": "19.2.4",
+    "react-dom": "19.2.4"
+  },
+  "devDependencies": {
+    "@tailwindcss/postcss": "^4",
+    "@types/node": "^20",
+    "@types/react": "^19",
+    "@types/react-dom": "^19",
+    "eslint": "^9",
+    "eslint-config-next": "16.2.7",
+    "supabase": "^2.105.0",
+    "tailwindcss": "^4",
+    "typescript": "^5"
+  }
+}

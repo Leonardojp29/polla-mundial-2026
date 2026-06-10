@@ -1,0 +1,62 @@
+import Link from 'next/link';
+import Image from 'next/image';
+import { getProfile } from '@/lib/data';
+import { signOut } from '@/lib/actions/auth';
+
+export default async function AppLayout({ children }: { children: React.ReactNode }) {
+  const profile = await getProfile();
+  const greeting = profile?.first_name || profile?.username || 'jugador';
+  const isAdmin = profile?.role === 'admin';
+
+  return (
+    <div className="flex min-h-dvh flex-col">
+      <header className="sticky top-0 z-10 border-b border-slate-200 bg-white/85 backdrop-blur">
+        <div className="mx-auto flex h-14 w-full max-w-6xl items-center justify-between px-4 sm:px-6">
+          <Link href="/" className="flex items-center gap-2.5">
+            <Image
+              src="/img/wc26-logo.svg"
+              alt="Copa Mundial FIFA 2026"
+              width={26}
+              height={40}
+              priority
+              className="h-9 w-auto"
+            />
+            <span className="flex items-baseline gap-2">
+              <span className="text-lg font-black tracking-tight">Polla Mundial</span>
+              <span className="hidden text-xs font-medium text-slate-400 sm:inline">
+                Mundial 2026
+              </span>
+            </span>
+          </Link>
+          <div className="flex items-center gap-3 text-sm">
+            {isAdmin && (
+              <Link
+                href="/admin"
+                className="rounded-lg bg-amber-100 px-3 py-1.5 text-sm font-semibold text-amber-800 transition hover:bg-amber-200"
+              >
+                ⚙️ Admin
+              </Link>
+            )}
+            <Link
+              href="/perfil"
+              className="hidden rounded-lg px-2 py-1.5 text-slate-500 transition hover:bg-slate-100 hover:text-slate-700 sm:inline"
+            >
+              👤 {greeting}
+            </Link>
+            <form action={signOut}>
+              <button className="rounded-lg border border-slate-200 px-3 py-1.5 text-sm text-slate-600 transition hover:bg-slate-100">
+                Salir
+              </button>
+            </form>
+          </div>
+        </div>
+      </header>
+
+      <main className="mx-auto w-full max-w-6xl flex-1 px-4 py-8 sm:px-6">{children}</main>
+
+      <footer className="border-t border-slate-200 py-4 text-center text-xs text-slate-400">
+        Polla Mundial · Mundial 2026 · 48 selecciones · 104 partidos
+      </footer>
+    </div>
+  );
+}
