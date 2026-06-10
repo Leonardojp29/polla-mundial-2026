@@ -2,6 +2,7 @@
 
 import { useActionState } from 'react';
 import { updateProfile, changePassword, type ProfileState } from '@/lib/actions/profile';
+import { CountrySelect } from '@/components/CountrySelect';
 
 const field =
   'w-full rounded-lg border border-slate-300 px-3 py-2 outline-none focus:border-emerald-500 focus:ring-2 focus:ring-emerald-200';
@@ -71,7 +72,7 @@ export function ProfileForms({
             <label htmlFor="pf-country" className="mb-1 block text-sm font-medium">
               País
             </label>
-            <input id="pf-country" name="country" defaultValue={profile.country} className={field} />
+            <CountrySelect id="pf-country" defaultValue={profile.country} className={field} />
           </div>
         </div>
 

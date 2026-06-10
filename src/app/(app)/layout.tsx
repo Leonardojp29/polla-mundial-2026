@@ -5,7 +5,7 @@ import { signOut } from '@/lib/actions/auth';
 
 export default async function AppLayout({ children }: { children: React.ReactNode }) {
   const profile = await getProfile();
-  const greeting = profile?.first_name || profile?.username || 'jugador';
+  const greeting = profile?.username || profile?.first_name || 'jugador';
   const isAdmin = profile?.role === 'admin';
 
   return (
@@ -39,9 +39,13 @@ export default async function AppLayout({ children }: { children: React.ReactNod
             )}
             <Link
               href="/perfil"
-              className="hidden rounded-lg px-2 py-1.5 text-slate-500 transition hover:bg-slate-100 hover:text-slate-700 sm:inline"
+              className="flex items-center gap-1.5 rounded-lg border border-slate-200 px-3 py-1.5 text-slate-600 transition hover:bg-slate-100 hover:text-slate-800"
             >
-              👤 {greeting}
+              <span aria-hidden>👤</span>
+              <span className="max-w-[8rem] truncate font-medium">{greeting}</span>
+              <span className="hidden text-xs font-medium text-emerald-700 sm:inline">
+                · Ver perfil
+              </span>
             </Link>
             <form action={signOut}>
               <button className="rounded-lg border border-slate-200 px-3 py-1.5 text-sm text-slate-600 transition hover:bg-slate-100">
