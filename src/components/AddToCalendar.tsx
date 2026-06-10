@@ -1,14 +1,14 @@
 'use client';
 
 import { useEffect, useRef, useState } from 'react';
-import { IconCalendar, IconDownload } from '@/components/Icons';
+import { IconCalendar } from '@/components/Icons';
 
 type Option = {
   label: string;
   href: string;
   external?: boolean;
   hint?: string;
-  icon: 'google' | 'apple' | 'download';
+  icon: 'google' | 'apple';
 };
 
 const GoogleIcon = () => (
@@ -28,8 +28,7 @@ const AppleIcon = () => (
 
 function OptionIcon({ icon }: { icon: Option['icon'] }) {
   if (icon === 'google') return <GoogleIcon />;
-  if (icon === 'apple') return <AppleIcon />;
-  return <IconDownload className="h-4 w-4 text-slate-500" />;
+  return <AppleIcon />;
 }
 
 // Botón "Agregar al calendario" con mini-popup: Google / Apple / descarga.
@@ -77,7 +76,7 @@ export function AddToCalendar({
         {
           label: 'Apple / iPhone / otros',
           href: icsPath,
-          hint: 'archivo .ics',
+          hint: 'se abre en tu calendario',
           icon: 'apple' as const,
         },
       ];
@@ -97,12 +96,6 @@ export function AddToCalendar({
         href: webcal,
         hint: 'suscripción · se actualiza solo',
         icon: 'apple' as const,
-      },
-      {
-        label: 'Descargar .ics',
-        href: icsPath,
-        hint: 'una sola vez, sin suscripción',
-        icon: 'download' as const,
       },
     ];
   })();

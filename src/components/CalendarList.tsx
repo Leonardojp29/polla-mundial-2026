@@ -96,24 +96,21 @@ export function CalendarList({ matches }: { matches: CalendarMatch[] }) {
             className="w-full rounded-xl border border-slate-200 bg-white py-2 pl-9 pr-3 text-sm outline-none transition focus:border-emerald-500 focus:ring-2 focus:ring-emerald-200"
           />
         </label>
-        {visible.length > 0 &&
-          (q !== '' ? (
-            // Con búsqueda: descarga directa de exactamente lo filtrado.
-            <a
-              href={`/api/ics/torneo?${new URLSearchParams({ ...(phase !== 'all' ? { fase: phase === 'group' ? 'group' : 'ko' } : {}), q: query.trim() }).toString()}`}
-              className="flex items-center gap-1.5 rounded-lg border border-emerald-600 px-3 py-1.5 text-xs font-semibold text-emerald-700 transition hover:bg-emerald-50"
-            >
-              <IconCalendar className="h-3.5 w-3.5" />
-              Agregar estos {visible.length} al calendario
-            </a>
-          ) : (
-            // Sin búsqueda: suscripción a todo el torneo o a la fase.
-            <AddToCalendar
-              mode="subscribe"
-              icsPath={`/api/ics/torneo${phase === 'all' ? '' : `?fase=${phase === 'group' ? 'group' : 'ko'}`}`}
-              label={`Agregar estos ${visible.length} al calendario`}
-            />
-          ))}
+        {visible.length > 0 && (
+          // Siempre popup Google/Apple: el filtro (fase y/o búsqueda) es parte
+          // del feed, así que la suscripción trae exactamente lo filtrado.
+          <AddToCalendar
+            mode="subscribe"
+            icsPath={`/api/ics/torneo${(() => {
+              const p = new URLSearchParams({
+                ...(phase !== 'all' ? { fase: phase === 'group' ? 'group' : 'ko' } : {}),
+                ...(q !== '' ? { q: query.trim() } : {}),
+              }).toString();
+              return p ? `?${p}` : '';
+            })()}`}
+            label={`Agregar estos ${visible.length} al calendario`}
+          />
+        )}
       </div>
 
       {days.length === 0 && (

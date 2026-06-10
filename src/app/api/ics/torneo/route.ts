@@ -30,5 +30,5 @@ export async function GET(request: Request) {
         ? 'Mundial 2026 — Eliminatorias'
         : 'Mundial 2026 — Todos los partidos';
   const ics = matchesToIcs(name, matches, origin);
-  return icsResponse(ics, 'mundial-2026.ics', q !== '');
+  return icsResponse(ics, 'mundial-2026.ics', false);
 }
