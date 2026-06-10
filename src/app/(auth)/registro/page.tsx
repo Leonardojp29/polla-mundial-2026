@@ -21,7 +21,7 @@ export default function RegistroPage() {
           <h2 className="text-xl font-bold">Crear cuenta</h2>
           <p className="text-sm text-slate-500">
             Al registrarte quedas inscrito automáticamente en la{' '}
-            <strong>Polla Global</strong> 🌍
+            <strong>Polla Global</strong>
           </p>
         </div>
 

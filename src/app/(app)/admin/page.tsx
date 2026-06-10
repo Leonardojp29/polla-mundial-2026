@@ -3,6 +3,7 @@ import { getProfile } from '@/lib/data';
 import { getAllMatches, getTeams, type MatchRow, type Team } from '@/lib/publicData';
 import { saveResult, clearResult, setMatchTeams, recalcSpecials } from '@/lib/actions/admin';
 import { Flag } from '@/components/Flag';
+import { IconSettings, IconStar } from '@/components/Icons';
 
 const STAGE_LABEL: Record<MatchRow['stage'], string> = {
   group: 'Grupos',
@@ -82,7 +83,7 @@ export default async function AdminPage({
   return (
     <>
       <header className="mb-6">
-        <h1 className="text-3xl font-black tracking-tight">⚙️ Panel admin</h1>
+        <h1 className="flex items-center gap-2.5 text-3xl font-black tracking-tight"><IconSettings className="h-7 w-7 text-slate-500" /> Panel admin</h1>
         <p className="mt-1 text-sm text-slate-500">
           Carga los resultados reales: al guardar, se recalculan los puntos de todas las pollas
           al instante. · <strong>{finished}/104</strong> partidos finalizados
@@ -90,32 +91,32 @@ export default async function AdminPage({
       </header>
 
       {sp.error && (
-        <p className="mb-4 rounded-lg bg-red-50 px-4 py-2.5 text-sm text-red-600">⚠️ {sp.error}</p>
+        <p className="mb-4 rounded-lg bg-red-50 px-4 py-2.5 text-sm text-red-600">{sp.error}</p>
       )}
       {sp.ok && (
         <p className="mb-4 rounded-lg bg-emerald-50 px-4 py-2.5 text-sm text-emerald-700">
-          ✅ Resultado guardado y puntos recalculados.
+          Resultado guardado y puntos recalculados.
         </p>
       )}
       {sp.reopened && (
         <p className="mb-4 rounded-lg bg-amber-50 px-4 py-2.5 text-sm text-amber-700">
-          ↩️ Partido reabierto: resultado y puntos borrados.
+          Partido reabierto: resultado y puntos borrados.
         </p>
       )}
       {sp.teams && (
         <p className="mb-4 rounded-lg bg-emerald-50 px-4 py-2.5 text-sm text-emerald-700">
-          ✅ Equipos del cruce asignados: la llave ya se puede predecir.
+          Equipos del cruce asignados: la llave ya se puede predecir.
         </p>
       )}
       {sp.specials && (
         <p className="mb-4 rounded-lg bg-emerald-50 px-4 py-2.5 text-sm text-emerald-700">
-          ✅ Puntos del pronóstico maestro recalculados en todas las pollas.
+          Puntos del pronóstico maestro recalculados en todas las pollas.
         </p>
       )}
 
       {/* Pronósticos maestros */}
       <section className="mb-8 rounded-2xl border border-violet-200 bg-violet-50/60 p-5">
-        <h2 className="font-bold text-violet-900">⭐ Pronósticos maestros</h2>
+        <h2 className="flex items-center gap-2 font-bold text-violet-900"><IconStar className="h-4 w-4 text-violet-500" /> Pronósticos maestros</h2>
         <p className="mt-1 text-sm text-violet-700">
           Recalcula los puntos de campeón/finalista/semifinalistas/grupos con lo decidido hasta
           ahora. El goleador se escribe aquí cuando se conozca (debe coincidir con el nombre que
@@ -232,7 +233,7 @@ export default async function AdminPage({
                     {m.stage !== 'group' && !tbd && m.status !== 'finished' && (
                       <details className="mt-2">
                         <summary className="cursor-pointer text-xs text-slate-400 hover:text-slate-600">
-                          ✏️ Corregir equipos del cruce
+                          Corregir equipos del cruce
                         </summary>
                         <form
                           action={setMatchTeams}

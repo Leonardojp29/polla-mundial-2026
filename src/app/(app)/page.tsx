@@ -8,27 +8,38 @@ import {
   type MatchLite,
   type TeamLite,
 } from '@/components/TournamentExplorer';
+import { Countdown } from '@/components/Countdown';
+import { MatchCenter, type MyPredMap } from '@/components/MatchCenter';
+import { MissingAlert, type MissingPool } from '@/components/MissingAlert';
+import { openMatches, missingFor, closeLabel } from '@/lib/missing';
+import { IconLock } from '@/components/Icons';
+import { GlobalBadge } from '@/components/WcBadges';
+import { getStadium } from '@/lib/stadiums';
+
+const GLOBAL_POOL_ID = '00000000-0000-0000-0000-000000000001';
 
 type PoolRow = { id: string; name: string; type: 'global' | 'private'; code: string | null };
-
-const KICKOFF = Date.parse('2026-06-11T19:00:00Z');
 
 export default async function HomePage() {
   const supabase = await createClient();
   const user = await getUser();
-  const daysLeft = Math.ceil((KICKOFF - Date.now()) / 86_400_000);
 
   // Solo MIS membresías (la RLS también permite ver las de mis compañeros de
   // polla para el ranking, así que sin este filtro saldría una tarjeta por miembro).
-  const [{ data: memberships }, allMatches, allTeams] = await Promise.all([
-    supabase
-      .from('memberships')
-      .select('pool:pools(id, name, type, code)')
-      .eq('user_id', user!.id)
-      .order('joined_at', { ascending: true }),
-    getAllMatches(),
-    getTeams(),
-  ]);
+  const [{ data: memberships }, { data: myPredictions }, allMatches, allTeams] =
+    await Promise.all([
+      supabase
+        .from('memberships')
+        .select('pool:pools(id, name, type, code)')
+        .eq('user_id', user!.id)
+        .order('joined_at', { ascending: true }),
+      supabase
+        .from('predictions')
+        .select('pool_id, match_id, pred_home_score, pred_away_score')
+        .eq('user_id', user!.id),
+      getAllMatches(),
+      getTeams(),
+    ]);
 
   const teamsLite: TeamLite[] = allTeams.map((t) => ({
     id: t.id,
@@ -57,34 +68,112 @@ export default async function HomePage() {
     .filter(Boolean)
     .sort((a, b) => (a.type === 'global' ? -1 : b.type === 'global' ? 1 : 0));
 
+  // Inicio del torneo: el primer kickoff de la base (no una fecha quemada).
+  const firstKickoff = allMatches.find((m) => m.kickoff_at)?.kickoff_at ?? null;
+  const started = !!firstKickoff && Date.parse(firstKickoff) <= Date.now();
+
+  // El hero muestra el estadio del partido en vivo (o del próximo por jugarse).
+  const heroMatch =
+    matchesLite.find((m) => m.status === 'live') ??
+    matchesLite
+      .filter((m) => m.status === 'scheduled' && m.kickoff && Date.parse(m.kickoff) > Date.now())
+      .sort((a, b) => Date.parse(a.kickoff!) - Date.parse(b.kickoff!))[0] ??
+    null;
+  const heroStadium = getStadium(heroMatch?.venue);
+  const heroLive = heroMatch?.status === 'live';
+
+  // Pronósticos pendientes por polla.
+  const open = openMatches(allMatches);
+  const predictedByPool = new Map<string, Set<number>>();
+  for (const p of myPredictions ?? []) {
+    if (!predictedByPool.has(p.pool_id)) predictedByPool.set(p.pool_id, new Set());
+    predictedByPool.get(p.pool_id)!.add(p.match_id);
+  }
+  const missingPools: MissingPool[] = pools.map((pool) => {
+    const info = missingFor(open, predictedByPool.get(pool.id) ?? new Set());
+    return {
+      poolId: pool.id,
+      poolName: pool.name,
+      count: info.count,
+      closeLabel: closeLabel(info.nextCloseIso),
+    };
+  });
+
+  // Mi pronóstico por partido (el de la Polla Global) para el Match Center.
+  const myPreds: MyPredMap = {};
+  for (const p of myPredictions ?? []) {
+    if (p.pool_id === GLOBAL_POOL_ID) {
+      myPreds[p.match_id] = { h: p.pred_home_score, a: p.pred_away_score };
+    }
+  }
+
   return (
     <>
       {/* Banner del torneo */}
       <div className="relative mb-8 overflow-hidden rounded-3xl">
         <Image
-          src="/img/field-aerial.jpg"
-          alt=""
+          src={heroStadium?.img ?? '/img/wc26/hero-azteca.webp'}
+          alt={heroStadium ? `${heroStadium.stadium}, ${heroStadium.city}` : 'Estadio Azteca'}
           fill
           priority
           sizes="(max-width: 1152px) 100vw, 1152px"
           className="object-cover"
         />
-        <div className="absolute inset-0 bg-gradient-to-r from-emerald-950/95 via-emerald-900/80 to-emerald-900/40" />
+        <div className="absolute inset-0 bg-gradient-to-r from-emerald-950/90 via-emerald-950/60 to-transparent" />
         <div className="relative z-10 px-6 py-8 text-white sm:px-10 sm:py-10">
           <p className="text-xs font-bold uppercase tracking-widest text-emerald-300">
             Copa Mundial FIFA 2026 · México · EE.UU. · Canadá
           </p>
-          <h2 className="mt-1 text-2xl font-black sm:text-3xl">
-            {daysLeft > 1 && <>¡Faltan {daysLeft} días para el pitazo inicial! ⚽</>}
-            {daysLeft === 1 && <>¡Mañana arranca el Mundial! ⚽</>}
-            {daysLeft <= 0 && <>¡El Mundial está en juego! ⚽</>}
-          </h2>
-          <p className="mt-1 text-sm text-emerald-100">
-            México vs Sudáfrica abre el torneo en el Estadio Azteca · La final es el 19 de julio
-            en Nueva York.
-          </p>
+          {started || !firstKickoff ? (
+            <>
+              <h2 className="mt-1 text-2xl font-black sm:text-3xl">
+                {heroLive ? '¡Se está jugando ahora!' : '¡El Mundial está en juego!'}
+              </h2>
+              <p className="mt-1 text-sm text-emerald-100">
+                {heroMatch && heroStadium ? (
+                  <>
+                    {heroMatch.home?.name ?? heroMatch.homeLabel} vs{' '}
+                    {heroMatch.away?.name ?? heroMatch.awayLabel}
+                    {heroLive ? ' se juega en ' : ' viene en '}
+                    <strong className="text-white">{heroStadium.stadium}</strong>,{' '}
+                    {heroStadium.city}.
+                  </>
+                ) : (
+                  <>Los marcadores y el ranking se actualizan en vivo · La final es el 19 de julio en Nueva York.</>
+                )}
+              </p>
+            </>
+          ) : (
+            <>
+              <h2 className="mt-1 text-2xl font-black sm:text-3xl">
+                El pitazo inicial se acerca
+              </h2>
+              <p className="mb-4 mt-1 text-sm text-emerald-100">
+                {heroMatch && heroStadium ? (
+                  <>
+                    {heroMatch.home?.name ?? heroMatch.homeLabel} vs{' '}
+                    {heroMatch.away?.name ?? heroMatch.awayLabel} abre el torneo en el{' '}
+                    <strong className="text-white">{heroStadium.stadium}</strong> · La final es
+                    el 19 de julio en Nueva York.
+                  </>
+                ) : (
+                  <>México vs Sudáfrica abre el torneo en el Estadio Azteca · La final es el 19 de julio en Nueva York.</>
+                )}
+              </p>
+              <Countdown targetIso={firstKickoff} />
+            </>
+          )}
+          {heroStadium && (
+            <p className="mt-3 inline-flex items-center gap-1.5 rounded-full bg-black/30 px-3 py-1 text-xs font-semibold text-emerald-100 backdrop-blur-sm">
+              {heroStadium.stadium} · {heroStadium.city}
+            </p>
+          )}
         </div>
       </div>
+
+      <MissingAlert pools={missingPools} />
+
+      <MatchCenter matches={matchesLite} myPreds={myPreds} />
 
       <div className="mb-8 flex flex-wrap items-center justify-between gap-4">
         <div>
@@ -118,7 +207,13 @@ export default async function HomePage() {
             >
               <div className="flex items-start justify-between gap-2">
                 <div>
-                  <span className="text-2xl">{pool.type === 'global' ? '🌍' : '🔒'}</span>
+                  {pool.type === 'global' ? (
+                    <GlobalBadge className="h-10 w-10" />
+                  ) : (
+                    <span className="inline-flex h-10 w-10 items-center justify-center rounded-xl bg-emerald-50 text-emerald-700">
+                      <IconLock className="h-5 w-5" />
+                    </span>
+                  )}
                   <h2 className="mt-2 font-bold leading-tight">{pool.name}</h2>
                 </div>
                 {pool.code ? (
@@ -139,7 +234,7 @@ export default async function HomePage() {
 
       <section>
         <div className="mb-4">
-          <h2 className="text-2xl font-black tracking-tight">El torneo de un vistazo ⚽</h2>
+          <h2 className="text-2xl font-black tracking-tight">El torneo de un vistazo</h2>
           <p className="text-sm text-slate-500">
             Grupos, posiciones, bracket y el camino de cada selección — en vivo a medida que
             se juegan los partidos.

@@ -2,6 +2,8 @@
 
 import { useEffect, useMemo, useState } from 'react';
 import { Flag } from '@/components/Flag';
+import { IconX } from '@/components/Icons';
+import { TrophyBadge } from '@/components/WcBadges';
 import { DragScroller } from '@/components/DragScroller';
 import { GROUP_COLOR } from '@/lib/groupColors';
 
@@ -137,7 +139,7 @@ function CloseBtn({ onClose }: { onClose: () => void }) {
       aria-label="Cerrar"
       className="rounded-full px-2.5 py-1 text-lg text-slate-400 transition hover:bg-slate-100 hover:text-slate-700"
     >
-      ✕
+      <IconX className="h-4 w-4" />
     </button>
   );
 }
@@ -192,7 +194,7 @@ export function TournamentExplorer({ teams, matches }: { teams: TeamLite[]; matc
           ))}
         </div>
         <p className="text-xs text-slate-400">
-          💡 Toca un grupo o una bandera para ver el detalle
+          Toca un grupo o una bandera para ver el detalle
         </p>
       </div>
 
@@ -248,7 +250,7 @@ export function TournamentExplorer({ teams, matches }: { teams: TeamLite[]; matc
         <div>
           {champion && (
             <div className="mb-4 flex items-center justify-center gap-3 rounded-2xl bg-gradient-to-r from-amber-50 to-yellow-50 px-4 py-3">
-              <span className="text-2xl">🏆</span>
+              <TrophyBadge className="h-9 w-9" />
               <Flag code={champion.flag} className="h-6 w-9" />
               <span className="text-lg font-black">{champion.name} — ¡CAMPEÓN DEL MUNDO!</span>
             </div>
@@ -294,7 +296,7 @@ export function TournamentExplorer({ teams, matches }: { teams: TeamLite[]; matc
                       ))}
                       {stage === 'final' && third && (
                         <div className="rounded-xl border border-slate-200 bg-slate-50 p-2">
-                          <p className="mb-1 text-[10px] font-bold uppercase text-slate-400">🥉 3.er puesto · {fmtDate(third.kickoff)}</p>
+                          <p className="mb-1 text-[10px] font-bold uppercase text-slate-400">3.er puesto · {fmtDate(third.kickoff)}</p>
                           {[
                             { t: third.home, l: third.homeLabel, s: third.hs },
                             { t: third.away, l: third.awayLabel, s: third.as },

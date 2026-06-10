@@ -2,6 +2,8 @@ import Link from 'next/link';
 import Image from 'next/image';
 import { getProfile } from '@/lib/data';
 import { signOut } from '@/lib/actions/auth';
+import { Avatar } from '@/components/Avatar';
+import { IconSettings } from '@/components/Icons';
 
 export default async function AppLayout({ children }: { children: React.ReactNode }) {
   const profile = await getProfile();
@@ -32,16 +34,20 @@ export default async function AppLayout({ children }: { children: React.ReactNod
             {isAdmin && (
               <Link
                 href="/admin"
-                className="rounded-lg bg-amber-100 px-3 py-1.5 text-sm font-semibold text-amber-800 transition hover:bg-amber-200"
+                className="flex items-center gap-1.5 rounded-lg bg-amber-100 px-3 py-1.5 text-sm font-semibold text-amber-800 transition hover:bg-amber-200"
               >
-                ⚙️ Admin
+                <IconSettings className="h-4 w-4" /> Admin
               </Link>
             )}
             <Link
               href="/perfil"
               className="flex items-center gap-1.5 rounded-lg border border-slate-200 px-3 py-1.5 text-slate-600 transition hover:bg-slate-100 hover:text-slate-800"
             >
-              <span aria-hidden>👤</span>
+              <Avatar
+                name={profile?.first_name || greeting}
+                url={profile?.avatar_url}
+                className="h-6 w-6 text-[9px]"
+              />
               <span className="max-w-[8rem] truncate font-medium">{greeting}</span>
               <span className="hidden text-xs font-medium text-emerald-700 sm:inline">
                 · Ver perfil

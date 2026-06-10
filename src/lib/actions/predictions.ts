@@ -87,7 +87,7 @@ export async function savePredictions(_prev: SaveState, formData: FormData): Pro
   }
 
   const parts: string[] = [];
-  if (rows.length > 0) parts.push(`✅ ${rows.length} pronóstico${rows.length === 1 ? '' : 's'} guardado${rows.length === 1 ? '' : 's'}`);
+  if (rows.length > 0) parts.push(`${rows.length} pronóstico${rows.length === 1 ? '' : 's'} guardado${rows.length === 1 ? '' : 's'}`);
   if (incomplete > 0) parts.push(`${incomplete} incompleto${incomplete === 1 ? '' : 's'} (faltó un marcador)`);
   if (locked > 0) parts.push(`${locked} ya cerrado${locked === 1 ? '' : 's'}`);
   if (rows.length === 0) return { error: parts.join(' · ') || 'Nada que guardar.' };

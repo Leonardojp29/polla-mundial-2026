@@ -1,4 +1,4 @@
-import type { Metadata } from "next";
+import type { Metadata, Viewport } from "next";
 import { Geist } from "next/font/google";
 import "./globals.css";
 
@@ -12,6 +12,18 @@ export const metadata: Metadata = {
   title: "Polla Mundial — Mundial 2026",
   description:
     "Polla del Mundial 2026: crea la tuya, comparte el código y compite con tus amigos.",
+  appleWebApp: {
+    capable: true,
+    title: "Polla Mundial",
+    statusBarStyle: "default",
+  },
+  icons: {
+    apple: "/icons/apple-icon-180.png",
+  },
+};
+
+export const viewport: Viewport = {
+  themeColor: "#065f46",
 };
 
 export default function RootLayout({

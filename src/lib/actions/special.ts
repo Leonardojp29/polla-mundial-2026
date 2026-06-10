@@ -67,5 +67,5 @@ export async function saveSpecial(_prev: SpecialState, formData: FormData): Prom
   }
 
   revalidatePath(`/pollas/${poolId}/maestro`);
-  return { ok: '✅ Pronóstico maestro guardado.' };
+  return { ok: 'Pronóstico maestro guardado.' };
 }

@@ -11,10 +11,19 @@ export function Flag({
   if (!code) {
     return (
       <span
-        className={`inline-flex items-center justify-center rounded bg-slate-100 text-xs ${className}`}
+        className={`inline-flex items-center justify-center rounded bg-slate-100 text-slate-400 ${className}`}
         aria-hidden
       >
-        ⚽
+        <svg
+          viewBox="0 0 24 24"
+          fill="none"
+          stroke="currentColor"
+          strokeWidth="2"
+          className="h-[60%] w-auto"
+        >
+          <circle cx="12" cy="12" r="10" />
+          <path d="M12 8.5 15.3 10.9 14.04 14.8H9.96L8.7 10.9Z" fill="currentColor" stroke="none" />
+        </svg>
       </span>
     );
   }

@@ -8,7 +8,7 @@ export async function proxy(request: NextRequest) {
 
 export const config = {
   matcher: [
-    // Todo excepto estáticos e imágenes.
-    '/((?!_next/static|_next/image|favicon.ico|.*\\.(?:svg|png|jpg|jpeg|gif|webp|ico)$).*)',
+    // Todo excepto estáticos, imágenes y el manifest PWA.
+    '/((?!_next/static|_next/image|favicon.ico|manifest.webmanifest|.*\\.(?:svg|png|jpg|jpeg|gif|webp|ico)$).*)',
   ],
 };

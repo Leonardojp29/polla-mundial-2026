@@ -3,6 +3,8 @@
 import { useActionState } from 'react';
 import { saveSpecial, type SpecialState } from '@/lib/actions/special';
 import type { Team } from '@/lib/publicData';
+import { IconClipboard, IconFlame, IconLock, IconStar } from '@/components/Icons';
+import { TrophyBadge } from '@/components/WcBadges';
 
 export type SpecialVM = {
   champion: string | null;
@@ -55,7 +57,7 @@ export function MaestroForm({
       <input type="hidden" name="pool_id" value={poolId} />
 
       <div className="flex flex-wrap items-center justify-between gap-3">
-        <h2 className="text-lg font-bold">⭐ Pronóstico maestro</h2>
+        <h2 className="flex items-center gap-2 text-lg font-bold"><IconStar className="h-5 w-5 text-amber-400" /> Pronóstico maestro</h2>
         {current.points !== null && (
           <span className="rounded-full bg-emerald-50 px-3 py-1 text-sm font-semibold text-emerald-700">
             +{current.points} pts ganados
@@ -65,7 +67,7 @@ export function MaestroForm({
 
       {locked ? (
         <p className="rounded-xl bg-amber-50 px-4 py-3 text-sm text-amber-800">
-          🔒 El pronóstico maestro cerró al iniciar el torneo. Esto fue lo que elegiste.
+          <IconLock className="mr-1 h-4 w-4" /> El pronóstico maestro cerró al iniciar el torneo. Esto fue lo que elegiste.
         </p>
       ) : (
         <p className="rounded-xl bg-sky-50 px-4 py-3 text-sm text-sky-800">
@@ -77,7 +79,7 @@ export function MaestroForm({
 
       {/* Campeón / finalista / goleador */}
       <section className="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm">
-        <h3 className="mb-4 font-bold">🏆 El podio</h3>
+        <h3 className="mb-4 flex items-center gap-2 font-bold"><TrophyBadge className="h-6 w-6" /> El podio</h3>
         <div className="grid gap-4 sm:grid-cols-3">
           <div>
             <label htmlFor="champion" className="mb-1 block text-sm font-medium">
@@ -113,7 +115,7 @@ export function MaestroForm({
 
       {/* Semifinalistas */}
       <section className="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm">
-        <h3 className="mb-1 font-bold">🔥 Los 4 semifinalistas</h3>
+        <h3 className="mb-1 flex items-center gap-2 font-bold"><IconFlame className="h-4 w-4 text-orange-500" /> Los 4 semifinalistas</h3>
         <p className="mb-4 text-xs text-slate-500">8 pts por cada acierto, sin importar el orden.</p>
         <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
           {[1, 2, 3, 4].map((i) => (
@@ -133,7 +135,7 @@ export function MaestroForm({
 
       {/* 1.º y 2.º por grupo */}
       <section className="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm">
-        <h3 className="mb-1 font-bold">📋 Clasificados por grupo</h3>
+        <h3 className="mb-1 flex items-center gap-2 font-bold"><IconClipboard className="h-4 w-4 text-emerald-600" /> Clasificados por grupo</h3>
         <p className="mb-4 text-xs text-slate-500">
           1.º del grupo: 3 pts · 2.º del grupo: 2 pts. Puedes dejar grupos sin llenar.
         </p>

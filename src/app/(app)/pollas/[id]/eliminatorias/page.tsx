@@ -92,10 +92,10 @@ export default async function EliminatoriasPage({
       </div>
 
       <p className="rounded-xl bg-sky-50 px-4 py-3 text-sm text-sky-800">
-        💡 Cada llave se habilita cuando se definen los clasificados. Predices el marcador de
+        Cada llave se habilita cuando se definen los clasificados. Predices el marcador de
         cada cruce igual que en grupos — y los puntos valen más en cada ronda (final: 10 por
         marcador exacto). El campeón y el goleador se juegan en la pestaña{' '}
-        <strong>⭐ Maestro</strong>.
+        <strong>Maestro</strong>.
       </p>
 
       {vms.length > 0 ? (

@@ -2,12 +2,27 @@ import Link from 'next/link';
 import { notFound } from 'next/navigation';
 import { createClient } from '@/lib/supabase/server';
 import { getPool, getUser } from '@/lib/data';
+import { getAllMatches } from '@/lib/publicData';
 import { ShareCode } from '@/components/ShareCode';
 import { PoolTabs } from '@/components/PoolTabs';
+import { Avatar } from '@/components/Avatar';
+import { MissingAlert } from '@/components/MissingAlert';
+import { openMatches, missingFor, closeLabel } from '@/lib/missing';
+import {
+  IconCheck,
+  IconClock,
+  IconLock,
+  IconTarget,
+  IconTrendingUp,
+  IconUsers,
+  RankBadge,
+} from '@/components/Icons';
+import { GlobalBadge, TrophyBadge } from '@/components/WcBadges';
 
 type LeaderboardRow = {
   user_id: string;
   display_name: string;
+  avatar_url: string | null;
   points: number;
   predictions_count: number;
 };
@@ -25,11 +40,22 @@ export default async function PoolLayout({
   if (!pool) notFound();
 
   const supabase = await createClient();
-  const [user, { data: leaderboard }] = await Promise.all([
-    getUser(),
+  const user = await getUser();
+  const [{ data: leaderboard }, { data: myPredictions }, allMatches] = await Promise.all([
     supabase.rpc('get_leaderboard', { p_pool_id: id }),
+    supabase
+      .from('predictions')
+      .select('match_id')
+      .eq('pool_id', id)
+      .eq('user_id', user!.id),
+    getAllMatches(),
   ]);
   const rows: LeaderboardRow[] = leaderboard ?? [];
+
+  const missing = missingFor(
+    openMatches(allMatches),
+    new Set((myPredictions ?? []).map((p) => p.match_id)),
+  );
   const members = rows.length;
   const myIndex = rows.findIndex((r) => r.user_id === user?.id);
   const top = rows.slice(0, 5);
@@ -44,8 +70,6 @@ export default async function PoolLayout({
       })
     : null;
 
-  const medal = (i: number) => (i === 0 ? '🥇' : i === 1 ? '🥈' : i === 2 ? '🥉' : `${i + 1}`);
-
   return (
     <>
       <Link href="/" className="text-sm text-slate-500 hover:underline">
@@ -54,17 +78,40 @@ export default async function PoolLayout({
 
       <header className="mb-6 mt-3 flex flex-wrap items-end justify-between gap-4">
         <div>
-          <h1 className="flex items-center gap-2 text-3xl font-black tracking-tight">
-            <span>{pool.type === 'global' ? '🌍' : '🔒'}</span>
+          <h1 className="flex items-center gap-2.5 text-3xl font-black tracking-tight">
+            {pool.type === 'global' ? (
+              <GlobalBadge className="h-10 w-10" />
+            ) : (
+              <span className="inline-flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-emerald-50 text-emerald-700">
+                <IconLock className="h-5 w-5" />
+              </span>
+            )}
             {pool.name}
           </h1>
-          <p className="mt-1 text-sm text-slate-500">
-            👥 {members} jugador{members === 1 ? '' : 'es'}
-            {deadline && <> · ⏳ pronóstico maestro cierra: {deadline}</>}
+          <p className="mt-1 flex flex-wrap items-center gap-x-3 gap-y-1 text-sm text-slate-500">
+            <span className="flex items-center gap-1">
+              <IconUsers className="h-3.5 w-3.5" /> {members} jugador{members === 1 ? '' : 'es'}
+            </span>
+            {deadline && (
+              <span className="flex items-center gap-1">
+                <IconClock className="h-3.5 w-3.5" /> pronóstico maestro cierra: {deadline}
+              </span>
+            )}
           </p>
         </div>
         <PoolTabs poolId={pool.id} />
       </header>
+
+      <MissingAlert
+        pools={[
+          {
+            poolId: pool.id,
+            poolName: pool.name,
+            count: missing.count,
+            closeLabel: closeLabel(missing.nextCloseIso),
+          },
+        ]}
+      />
 
       <div className="grid items-start gap-6 lg:grid-cols-[minmax(0,1fr)_320px]">
         <div className="min-w-0">{children}</div>
@@ -75,17 +122,31 @@ export default async function PoolLayout({
           <div className="rounded-2xl border border-slate-200 bg-white p-4 text-sm shadow-sm">
             <h3 className="mb-2 font-semibold">Cómo se juega</h3>
             <ul className="space-y-1.5 text-slate-500">
-              <li>🎯 Marcador exacto: <strong className="text-slate-700">5 pts</strong></li>
-              <li>✅ Acertar el resultado: <strong className="text-slate-700">3 pts</strong></li>
-              <li>📈 En eliminatorias los puntos suben por ronda.</li>
-              <li>🔒 Cada partido se cierra a su hora de inicio.</li>
+              <li className="flex items-center gap-2">
+                <IconTarget className="h-4 w-4 shrink-0 text-emerald-600" />
+                <span>Marcador exacto: <strong className="text-slate-700">5 pts</strong></span>
+              </li>
+              <li className="flex items-center gap-2">
+                <IconCheck className="h-4 w-4 shrink-0 text-emerald-600" />
+                <span>Acertar el resultado: <strong className="text-slate-700">3 pts</strong></span>
+              </li>
+              <li className="flex items-center gap-2">
+                <IconTrendingUp className="h-4 w-4 shrink-0 text-emerald-600" />
+                <span>En eliminatorias los puntos suben por ronda.</span>
+              </li>
+              <li className="flex items-center gap-2">
+                <IconLock className="h-4 w-4 shrink-0 text-emerald-600" />
+                <span>Cada partido se cierra a su hora de inicio.</span>
+              </li>
             </ul>
           </div>
 
           {/* Mini-ranking siempre visible */}
           <div className="rounded-2xl border border-slate-200 bg-white p-4 text-sm shadow-sm">
             <div className="mb-2 flex items-center justify-between">
-              <h3 className="font-semibold">🏆 Ranking</h3>
+              <h3 className="flex items-center gap-1.5 font-semibold">
+                <TrophyBadge className="h-5 w-5" /> Ranking
+              </h3>
               <Link
                 href={`/pollas/${pool.id}/ranking`}
                 className="text-xs font-semibold text-emerald-700 hover:underline"
@@ -101,7 +162,8 @@ export default async function PoolLayout({
                     row.user_id === user?.id ? 'bg-emerald-50 font-semibold' : ''
                   }`}
                 >
-                  <span className="w-6 shrink-0 text-center text-xs">{medal(i)}</span>
+                  <RankBadge rank={i + 1} className="h-5 w-5 text-[10px]" />
+                  <Avatar name={row.display_name} url={row.avatar_url} className="h-6 w-6 text-[9px]" />
                   <span className="min-w-0 flex-1 truncate">{row.display_name}</span>
                   <span className="shrink-0 font-bold tabular-nums">{row.points}</span>
                 </li>
@@ -110,7 +172,12 @@ export default async function PoolLayout({
                 <>
                   <li className="px-2 text-center text-xs text-slate-300">⋯</li>
                   <li className="flex items-center gap-2 rounded-lg bg-emerald-50 px-2 py-1 font-semibold">
-                    <span className="w-6 shrink-0 text-center text-xs">{myIndex + 1}</span>
+                    <RankBadge rank={myIndex + 1} className="h-5 w-5 text-[10px]" />
+                    <Avatar
+                      name={rows[myIndex].display_name}
+                      url={rows[myIndex].avatar_url}
+                      className="h-6 w-6 text-[9px]"
+                    />
                     <span className="min-w-0 flex-1 truncate">
                       {rows[myIndex].display_name}{' '}
                       <span className="text-xs text-emerald-600">(tú)</span>

@@ -1,9 +1,47 @@
 'use server';
 
 import { redirect } from 'next/navigation';
+import { headers } from 'next/headers';
 import { createClient } from '@/lib/supabase/server';
 
-export type AuthState = { error?: string };
+export type AuthState = { error?: string; ok?: string };
+
+// Envía el correo de recuperación. Siempre responde lo mismo (no revela si el
+// correo existe o no).
+export async function requestPasswordReset(
+  _prev: AuthState,
+  formData: FormData,
+): Promise<AuthState> {
+  const email = String(formData.get('email') ?? '').trim();
+  if (!email) return { error: 'Escribe tu correo.' };
+
+  const h = await headers();
+  const origin = h.get('origin') ?? `https://${h.get('host')}`;
+
+  const supabase = await createClient();
+  await supabase.auth.resetPasswordForEmail(email, {
+    redirectTo: `${origin}/auth/callback?next=/restablecer`,
+  });
+
+  return {
+    ok: 'Si ese correo está registrado, te llegará un enlace para restablecer tu contraseña. Revisa también spam.',
+  };
+}
+
+// El enlace del correo deja al usuario con sesión temporal: aquí define la nueva.
+export async function resetPassword(_prev: AuthState, formData: FormData): Promise<AuthState> {
+  const password = String(formData.get('password') ?? '');
+  const confirm = String(formData.get('confirm') ?? '');
+  if (password.length < 6) return { error: 'La contraseña debe tener al menos 6 caracteres.' };
+  if (password !== confirm) return { error: 'Las contraseñas no coinciden.' };
+
+  const supabase = await createClient();
+  const { error } = await supabase.auth.updateUser({ password });
+  if (error && error.code !== 'same_password') {
+    return { error: 'No se pudo cambiar la contraseña. Pide un enlace nuevo e intenta otra vez.' };
+  }
+  redirect('/');
+}
 
 export async function login(_prev: AuthState, formData: FormData): Promise<AuthState> {
   const supabase = await createClient();

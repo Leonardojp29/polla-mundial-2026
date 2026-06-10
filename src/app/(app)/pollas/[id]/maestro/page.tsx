@@ -2,6 +2,7 @@ import { createClient } from '@/lib/supabase/server';
 import { getPool } from '@/lib/data';
 import { getTeams } from '@/lib/publicData';
 import { MaestroForm, type SpecialVM } from '@/components/MaestroForm';
+import { ShareMaestroButton } from '@/components/ShareMaestroButton';
 
 export default async function MaestroPage({
   params,
@@ -42,12 +43,15 @@ export default async function MaestroPage({
   };
 
   return (
-    <MaestroForm
-      poolId={id}
-      teams={teams}
-      current={current}
-      locked={locked}
-      deadlineLabel={deadlineLabel}
-    />
+    <>
+      <MaestroForm
+        poolId={id}
+        teams={teams}
+        current={current}
+        locked={locked}
+        deadlineLabel={deadlineLabel}
+      />
+      {current.champion && <ShareMaestroButton poolId={id} />}
+    </>
   );
 }

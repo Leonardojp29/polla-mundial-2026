@@ -79,7 +79,7 @@ export async function updateProfile(_prev: ProfileState, formData: FormData): Pr
 
   revalidatePath('/perfil');
   revalidatePath('/', 'layout');
-  return { ok: '✅ Perfil actualizado.' };
+  return { ok: 'Perfil actualizado.' };
 }
 
 export async function changePassword(_prev: ProfileState, formData: FormData): Promise<ProfileState> {
@@ -100,5 +100,5 @@ export async function changePassword(_prev: ProfileState, formData: FormData): P
     if (error.code === 'same_password') return { error: 'La nueva contraseña debe ser distinta a la actual.' };
     return { error: `No se pudo cambiar: ${error.message}` };
   }
-  return { ok: '✅ Contraseña actualizada.' };
+  return { ok: 'Contraseña actualizada.' };
 }

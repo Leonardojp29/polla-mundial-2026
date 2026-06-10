@@ -25,7 +25,7 @@ export function CompleteProfileForm({
         <h2 className="text-xl font-bold">¡Ya casi! Completa tu perfil</h2>
         <p className="text-sm text-slate-500">
           Tu cuenta de Google está conectada. Termina estos datos para entrar a la{' '}
-          <strong>Polla Global</strong> 🌍
+          <strong>Polla Global</strong>
         </p>
       </div>
 

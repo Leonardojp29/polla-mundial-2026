@@ -48,12 +48,12 @@ export default async function PerfilPage() {
             {profile.first_name} {profile.last_name}
             {profile.role === 'admin' && (
               <span className="ml-2 rounded-full bg-amber-100 px-2 py-0.5 align-middle text-xs font-semibold text-amber-800">
-                ⚙️ Admin
+                Admin
               </span>
             )}
           </h1>
           <p className="text-sm text-slate-500">
-            {profile.email} · miembro desde {memberSince} · 🏆 {poolCount ?? 0} polla
+            {profile.email} · miembro desde {memberSince} · {poolCount ?? 0} polla
             {(poolCount ?? 0) === 1 ? '' : 's'}
           </p>
         </div>

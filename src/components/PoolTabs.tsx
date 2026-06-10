@@ -10,7 +10,8 @@ export function PoolTabs({ poolId }: { poolId: string }) {
   const tabs = [
     { href: `${base}/predicciones`, label: 'Grupos' },
     { href: `${base}/eliminatorias`, label: 'Eliminatorias' },
-    { href: `${base}/maestro`, label: '⭐ Maestro' },
+    { href: `${base}/maestro`, label: 'Maestro' },
+    { href: `${base}/estadisticas`, label: 'Stats' },
     { href: `${base}/ranking`, label: 'Ranking' },
   ];
 

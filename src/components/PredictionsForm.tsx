@@ -3,6 +3,8 @@
 import { useActionState, useState } from 'react';
 import { savePredictions, type SaveState } from '@/lib/actions/predictions';
 import { Flag } from '@/components/Flag';
+import { MatchPredictionsPeek } from '@/components/MatchPredictionsPeek';
+import { IconAlert, IconCalendar, IconLock, IconMapPin } from '@/components/Icons';
 
 export type MatchVM = {
   id: number;
@@ -79,7 +81,7 @@ function Stepper({
 }
 
 // ---------- Tarjeta de partido ----------
-function MatchCard({ m }: { m: MatchVM }) {
+function MatchCard({ m, poolId }: { m: MatchVM; poolId: string }) {
   const [h, setH] = useState(m.predHome?.toString() ?? '');
   const [a, setA] = useState(m.predAway?.toString() ?? '');
 
@@ -108,15 +110,20 @@ function MatchCard({ m }: { m: MatchVM }) {
               {m.stageLabel}
             </span>
           )}
-          {m.venue && <>📍 {m.venue}</>}
+          {m.venue && (
+            <>
+              <IconMapPin className="mr-0.5 h-3 w-3" />
+              {m.venue}
+            </>
+          )}
         </span>
         {m.finished ? (
           <span className="shrink-0 rounded-full bg-slate-100 px-2.5 py-0.5 font-semibold text-slate-500">
             Finalizado
           </span>
         ) : m.locked ? (
-          <span className="shrink-0 rounded-full bg-amber-50 px-2.5 py-0.5 font-semibold text-amber-600">
-            🔒 En juego / cerrado
+          <span className="flex shrink-0 items-center gap-1 rounded-full bg-amber-50 px-2.5 py-0.5 font-semibold text-amber-600">
+            <IconLock className="h-3 w-3" /> En juego / cerrado
           </span>
         ) : (
           <span className="shrink-0 rounded-full bg-emerald-50 px-2.5 py-0.5 font-semibold text-emerald-600">
@@ -196,6 +203,9 @@ function MatchCard({ m }: { m: MatchVM }) {
           </span>
         </p>
       )}
+
+      {/* Partido ya iniciado: se abren los pronósticos de la polla */}
+      {m.locked && <MatchPredictionsPeek poolId={poolId} matchId={m.id} />}
     </div>
   );
 }
@@ -213,7 +223,28 @@ export function PredictionsForm({
   matches: MatchVM[];
 }) {
   const [state, formAction, pending] = useActionState<SaveState, FormData>(savePredictions, {});
+  const [incomplete, setIncomplete] = useState<string[]>([]);
   const editable = matches.some((m) => !m.locked);
+
+  // Si un partido tiene solo un marcador (p. ej. México 2 y Sudáfrica vacío),
+  // no se guardaría nada de ese partido: avisamos antes de enviar.
+  function handleSubmit(e: React.FormEvent<HTMLFormElement>) {
+    const fd = new FormData(e.currentTarget);
+    const halfFilled = matches
+      .filter((m) => !m.locked)
+      .filter((m) => {
+        const h = String(fd.get(`h-${m.id}`) ?? '');
+        const a = String(fd.get(`a-${m.id}`) ?? '');
+        return (h === '') !== (a === '');
+      })
+      .map((m) => `${m.home.name} vs ${m.away.name}`);
+    if (halfFilled.length > 0) {
+      e.preventDefault();
+      setIncomplete(halfFilled);
+    } else {
+      setIncomplete([]);
+    }
+  }
 
   // Secciones por día (los partidos ya vienen ordenados por kickoff).
   const days: { day: string; isToday: boolean; items: MatchVM[] }[] = [];
@@ -224,14 +255,14 @@ export function PredictionsForm({
   }
 
   return (
-    <form key={formKey} action={formAction} className="space-y-4">
+    <form key={formKey} action={formAction} onSubmit={handleSubmit} className="space-y-4">
       <input type="hidden" name="pool_id" value={poolId} />
 
       {days.map((d) => (
         <section key={d.day} className="space-y-2.5">
           <div className="flex items-center gap-3 pt-1">
-            <h3 className="text-sm font-black uppercase tracking-wide text-slate-700">
-              📅 {d.day}
+            <h3 className="flex items-center gap-1.5 text-sm font-black uppercase tracking-wide text-slate-700">
+              <IconCalendar className="h-4 w-4 text-emerald-600" /> {d.day}
             </h3>
             {d.isToday && (
               <span className="rounded-full bg-emerald-600 px-2.5 py-0.5 text-[10px] font-black uppercase tracking-widest text-white">
@@ -241,10 +272,27 @@ export function PredictionsForm({
             <span className="h-px flex-1 bg-slate-200" />
           </div>
           {d.items.map((m) => (
-            <MatchCard key={m.id} m={m} />
+            <MatchCard key={m.id} m={m} poolId={poolId} />
           ))}
         </section>
       ))}
+
+      {incomplete.length > 0 && (
+        <div className="rounded-lg bg-amber-50 px-3 py-2 text-sm text-amber-800">
+          <p className="flex items-center gap-1.5 font-semibold">
+            <IconAlert className="h-4 w-4 shrink-0 text-amber-600" />
+            Falta el marcador del otro equipo en:
+          </p>
+          <ul className="mt-1 list-inside list-disc">
+            {incomplete.map((name) => (
+              <li key={name}>{name}</li>
+            ))}
+          </ul>
+          <p className="mt-1 text-xs text-amber-700">
+            Completa ambos marcadores (o deja los dos vacíos) y vuelve a guardar.
+          </p>
+        </div>
+      )}
 
       {(state.ok || state.error) && (
         <p

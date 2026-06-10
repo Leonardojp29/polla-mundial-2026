@@ -2,6 +2,7 @@
 
 import { useState } from 'react';
 import { Flag } from '@/components/Flag';
+import { IconCheck } from '@/components/Icons';
 import { DragScroller } from '@/components/DragScroller';
 import { GROUP_COLOR } from '@/lib/groupColors';
 import { PredictionsForm, type MatchVM } from '@/components/PredictionsForm';
@@ -62,7 +63,7 @@ export function GroupsPredictions({
                     active ? 'bg-white text-emerald-600' : 'bg-emerald-500 text-white'
                   }`}
                 >
-                  ✓
+                  <IconCheck className="h-3 w-3" />
                 </span>
               )}
               <span
