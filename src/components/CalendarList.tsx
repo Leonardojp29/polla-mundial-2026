@@ -1,32 +1,40 @@
 'use client';
 
-import { useState } from 'react';
+import { useMemo, useState } from 'react';
 import Link from 'next/link';
 import { Flag } from '@/components/Flag';
 import { GROUP_COLOR } from '@/lib/groupColors';
 import { IconCalendar, IconSearch, LiveDot } from '@/components/Icons';
 import { normTeamName } from '@/lib/teamNames';
+import { getStadium } from '@/lib/stadiums';
+import { matchDayParts } from '@/lib/dates';
 import { AddToCalendar } from '@/components/AddToCalendar';
+import type { MatchLite } from '@/components/TournamentExplorer';
 
-export type CalendarMatch = {
-  id: number;
-  stage: string;
-  stageLabel: string;
-  group: string | null;
-  day: string; // "Jueves, 11 de junio"
-  time: string; // "14:00" hora Perú
-  isToday: boolean;
-  status: 'scheduled' | 'live' | 'finished';
-  hs: number | null;
-  as: number | null;
-  homeName: string;
-  homeFlag: string | null;
-  awayName: string;
-  awayFlag: string | null;
-  stadium: string | null;
-  city: string | null;
-  gcalUrl: string | null;
+const STAGE_LABEL: Record<string, string> = {
+  group: 'Grupos',
+  r32: '16avos',
+  r16: 'Octavos',
+  qf: 'Cuartos',
+  sf: 'Semis',
+  third: '3.er puesto',
+  final: 'FINAL',
 };
+
+// Evento de Google Calendar (105 min, hora UTC; Google la muestra en la del usuario).
+function gcalUrl(home: string, away: string, kickoffIso: string, location: string | null): string {
+  const fmt = (ms: number) =>
+    new Date(ms).toISOString().replace(/[-:]/g, '').replace(/\.\d{3}/, '');
+  const start = Date.parse(kickoffIso);
+  const params = new URLSearchParams({
+    action: 'TEMPLATE',
+    text: `${home} vs ${away} — Mundial 2026`,
+    dates: `${fmt(start)}/${fmt(start + 105 * 60_000)}`,
+    details: 'Pronostica en Polla Mundial',
+    ...(location ? { location } : {}),
+  });
+  return `https://calendar.google.com/calendar/render?${params.toString()}`;
+}
 
 const PHASES: { key: string; label: string; stages: string[] }[] = [
   { key: 'all', label: 'Todo', stages: [] },
@@ -35,12 +43,52 @@ const PHASES: { key: string; label: string; stages: string[] }[] = [
 ];
 
 // Calendario: 104 partidos por día (hora Perú), filtro por fase y buscador —
-// todo en el cliente, instantáneo. Colapsado muestra los próximos 3 días de
-// partidos; "Ver calendario completo" expande el resto.
-export function CalendarList({ matches }: { matches: CalendarMatch[] }) {
+// recibe los MatchLite que la Home ya carga (sin duplicar payload) y deriva
+// fechas/estadios/enlaces en el cliente. Colapsado muestra los próximos 3 días.
+export function CalendarList({ matches: raw }: { matches: MatchLite[] }) {
   const [phase, setPhase] = useState('all');
   const [query, setQuery] = useState('');
   const [expanded, setExpanded] = useState(false);
+
+  const matches = useMemo(
+    () =>
+      raw
+        .filter((m) => m.kickoff)
+        .map((m) => {
+          const { day, time, isToday } = matchDayParts(m.kickoff);
+          const stadium = getStadium(m.venue);
+          const homeName = m.home?.name ?? m.homeLabel ?? 'Por definir';
+          const awayName = m.away?.name ?? m.awayLabel ?? 'Por definir';
+          return {
+            id: m.id,
+            stage: m.stage,
+            stageLabel: STAGE_LABEL[m.stage],
+            group: m.group,
+            day,
+            time,
+            isToday,
+            status: m.status,
+            hs: m.hs,
+            as: m.as,
+            homeName,
+            homeFlag: m.home?.flag ?? null,
+            awayName,
+            awayFlag: m.away?.flag ?? null,
+            stadium: stadium?.stadium ?? null,
+            city: stadium?.city ?? null,
+            gcalUrl:
+              m.status === 'scheduled'
+                ? gcalUrl(
+                    homeName,
+                    awayName,
+                    m.kickoff!,
+                    stadium ? `${stadium.stadium}, ${stadium.city}` : m.venue,
+                  )
+                : null,
+          };
+        }),
+    [raw],
+  );
 
   const stages = PHASES.find((p) => p.key === phase)?.stages ?? [];
   const q = normTeamName(query);
@@ -51,7 +99,7 @@ export function CalendarList({ matches }: { matches: CalendarMatch[] }) {
   );
 
   // Agrupar por día (vienen ordenados por kickoff).
-  const allDays: { day: string; isToday: boolean; items: CalendarMatch[] }[] = [];
+  const allDays: { day: string; isToday: boolean; items: typeof visible }[] = [];
   for (const m of visible) {
     const last = allDays[allDays.length - 1];
     if (last && last.day === m.day) last.items.push(m);

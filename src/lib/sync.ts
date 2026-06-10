@@ -10,6 +10,7 @@ export type SyncSummary = {
   live: number;
   teamsSet: number;
   unmatched: number;
+  scorers: number;
 };
 
 function stageOf(fdStage: string | null | undefined): string | null {
@@ -44,7 +45,7 @@ export async function runSyncCycle(): Promise<SyncSummary> {
 
   // 1) Nuestro estado actual
   const [teamsRes, matchesRes] = await Promise.all([
-    svc.from('teams').select('id, name'),
+    svc.from('teams').select('id, name, flag_code'),
     svc
       .from('matches')
       .select('id, stage, kickoff_at, status, home_score, away_score, home_team_id, away_team_id'),
@@ -75,6 +76,7 @@ export async function runSyncCycle(): Promise<SyncSummary> {
     live: 0,
     teamsSet: 0,
     unmatched: 0,
+    scorers: 0,
   };
 
   for (const fm of fdMatches) {
@@ -150,6 +152,49 @@ export async function runSyncCycle(): Promise<SyncSummary> {
     if (error) continue;
     if (isFinished) summary.applied++;
     else summary.live++;
+  }
+
+  // 6) Goleadores reales (2.ª petición del ciclo; no es fatal si falla).
+  try {
+    const flagByNorm = new Map(teams.map((t) => [norm(t.name), t.flag_code]));
+    const flagFor = (fdName: string | null | undefined): string | null => {
+      const n = norm(fdName);
+      return flagByNorm.get(n) ?? flagByNorm.get(ALIAS[n] ?? '') ?? null;
+    };
+    const sres = await fetch(
+      'https://api.football-data.org/v4/competitions/WC/scorers?limit=15',
+      { headers: { 'X-Auth-Token': TOKEN }, cache: 'no-store' },
+    );
+    if (sres.ok) {
+      type FdScorer = {
+        player: { id: number; name: string };
+        team: { name: string } | null;
+        goals: number | null;
+        assists: number | null;
+        penalties: number | null;
+      };
+      const scorers: FdScorer[] = (await sres.json()).scorers ?? [];
+      if (scorers.length > 0) {
+        const rows = scorers.map((s) => ({
+          player_id: s.player.id,
+          player_name: s.player.name,
+          team_name: s.team?.name ?? null,
+          flag_code: flagFor(s.team?.name),
+          goals: s.goals ?? 0,
+          assists: s.assists,
+          penalties: s.penalties,
+          updated_at: new Date().toISOString(),
+        }));
+        await svc.from('top_scorers').upsert(rows);
+        await svc
+          .from('top_scorers')
+          .delete()
+          .not('player_id', 'in', `(${rows.map((r) => r.player_id).join(',')})`);
+        summary.scorers = rows.length;
+      }
+    }
+  } catch {
+    // El próximo ciclo lo reintenta.
   }
 
   return summary;

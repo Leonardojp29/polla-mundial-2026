@@ -76,6 +76,76 @@ export type Team = {
   group_letter: string | null;
 };
 
+// ---------- Agregados de la POLLA GLOBAL (públicos y cacheados) ----------
+// Son iguales para todos los usuarios: en vez de pegarle a la BD en cada
+// apertura de modal, se sirven del Data Cache (PostgREST permite GET en RPCs
+// marcadas STABLE, y los GET sí entran al caché de Next).
+const GLOBAL_POOL_ID = '00000000-0000-0000-0000-000000000001';
+
+async function cachedRpc<T>(fn: string, revalidate: number): Promise<T | null> {
+  const res = await fetch(
+    `${process.env.NEXT_PUBLIC_SUPABASE_URL}/rest/v1/rpc/${fn}?p_pool_id=${GLOBAL_POOL_ID}`,
+    {
+      headers: {
+        apikey: process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
+        Authorization: `Bearer ${process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY}`,
+      },
+      next: { revalidate, tags: ['global-stats'] },
+    },
+  );
+  if (!res.ok) return null;
+  return res.json();
+}
+
+export type PoolStats = {
+  members: number;
+  with_special: number;
+  champions: { name: string; flag: string | null; n: number }[];
+  top_scorers: { name: string; n: number }[];
+};
+
+export type ConsensusRow = {
+  match_id: number;
+  home_n: number;
+  draw_n: number;
+  away_n: number;
+  top_score: string | null;
+  total: number;
+};
+
+export async function getGlobalStats(): Promise<PoolStats | null> {
+  return cachedRpc<PoolStats>('get_pool_stats', 60);
+}
+
+export async function getGlobalConsensus(): Promise<ConsensusRow[]> {
+  return (await cachedRpc<ConsensusRow[]>('get_pool_consensus', 30)) ?? [];
+}
+
+// ---------- Goleadores reales (los actualiza el sync) ----------
+export type TopScorer = {
+  player_id: number;
+  player_name: string;
+  team_name: string | null;
+  flag_code: string | null;
+  goals: number;
+  assists: number | null;
+  penalties: number | null;
+};
+
+export async function getTopScorers(): Promise<TopScorer[]> {
+  const { data, error } = await publicClient
+    .from('top_scorers')
+    .select('player_id, player_name, team_name, flag_code, goals, assists, penalties')
+    .order('goals', { ascending: false })
+    .order('assists', { ascending: false, nullsFirst: false })
+    .limit(15);
+  if (error) return [];
+  return ((data ?? []) as TopScorer[]).map((s) => ({
+    ...s,
+    team_name: s.team_name ? esTeamName(s.team_name) : null,
+  }));
+}
+
 export async function getTeams(): Promise<Team[]> {
   const { data, error } = await publicClient
     .from('teams')

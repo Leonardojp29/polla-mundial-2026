@@ -3,6 +3,7 @@ import { redirect } from 'next/navigation';
 import { createClient } from '@/lib/supabase/server';
 import { getUser } from '@/lib/data';
 import { ProfileForms } from '@/components/ProfileForms';
+import { PushSettings } from '@/components/PushSettings';
 
 export default async function PerfilPage() {
   const user = await getUser();
@@ -70,6 +71,10 @@ export default async function PerfilPage() {
         }}
         hasGoogle={hasGoogle}
       />
+
+      <div className="mt-6">
+        <PushSettings />
+      </div>
     </div>
   );
 }

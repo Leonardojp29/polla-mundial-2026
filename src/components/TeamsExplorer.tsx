@@ -2,6 +2,7 @@
 
 import { useState } from 'react';
 import Link from 'next/link';
+import Image from 'next/image';
 import { Flag } from '@/components/Flag';
 import { GROUP_COLOR } from '@/lib/groupColors';
 import { IconSearch } from '@/components/Icons';
@@ -82,14 +83,11 @@ export function TeamsExplorer({ teams }: { teams: TeamCard[] }) {
             className="group flex flex-col items-center gap-2 rounded-2xl border border-white/10 bg-white/5 p-4 transition hover:-translate-y-0.5 hover:border-emerald-400/40 hover:bg-white/10"
           >
             {t.crest ? (
-              // eslint-disable-next-line @next/next/no-img-element -- escudo SVG remoto (football-data)
-              <img
+              <Image
                 src={t.crest}
                 alt=""
                 width={64}
                 height={64}
-                loading="lazy"
-                decoding="async"
                 className="h-14 w-14 object-contain drop-shadow-[0_4px_12px_rgba(0,0,0,0.5)] transition duration-300 group-hover:scale-110"
               />
             ) : (

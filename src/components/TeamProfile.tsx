@@ -3,8 +3,7 @@ import { join } from 'node:path';
 import Image from 'next/image';
 import Link from 'next/link';
 import { notFound } from 'next/navigation';
-import { createClient } from '@/lib/supabase/server';
-import { getTeams, getAllMatches, type MatchRow } from '@/lib/publicData';
+import { getTeams, getAllMatches, getGlobalStats, type MatchRow } from '@/lib/publicData';
 import { findFdTeam, getFdTeamDetail, positionGroup, type PositionGroup } from '@/lib/fd';
 import { getStadium, type StadiumInfo } from '@/lib/stadiums';
 import { matchDayParts } from '@/lib/dates';
@@ -14,8 +13,6 @@ import { Flag } from '@/components/Flag';
 import { TrophyBadge } from '@/components/WcBadges';
 import { LiveDot } from '@/components/Icons';
 import { AddToCalendar } from '@/components/AddToCalendar';
-
-const GLOBAL_POOL_ID = '00000000-0000-0000-0000-000000000001';
 
 const STAGE_LABEL: Record<string, string> = {
   group: 'Grupos',
@@ -121,11 +118,7 @@ export async function TeamProfile({ id }: { id: string }) {
   const team = teams.find((t) => t.id === id);
   if (!team) notFound();
 
-  const supabase = await createClient();
-  const [fdTeam, { data: statsRaw }] = await Promise.all([
-    findFdTeam(team.name),
-    supabase.rpc('get_pool_stats', { p_pool_id: GLOBAL_POOL_ID }),
-  ]);
+  const [fdTeam, statsRaw] = await Promise.all([findFdTeam(team.name), getGlobalStats()]);
   const detail = fdTeam ? await getFdTeamDetail(fdTeam.id) : null;
   const squad = detail?.squad ?? [];
 
@@ -207,8 +200,7 @@ export async function TeamProfile({ id }: { id: string }) {
         />
         <div className="relative z-10 flex flex-wrap items-center gap-4 px-5 py-4">
           {fdTeam?.crest ? (
-            // eslint-disable-next-line @next/next/no-img-element -- escudo SVG remoto (football-data)
-            <img
+            <Image
               src={fdTeam.crest}
               alt=""
               width={64}

@@ -1,5 +1,7 @@
 import { createClient } from '@/lib/supabase/server';
-import { getAllMatches } from '@/lib/publicData';
+import { getAllMatches, getGlobalConsensus, getGlobalStats } from '@/lib/publicData';
+
+const GLOBAL_POOL_ID = '00000000-0000-0000-0000-000000000001';
 import { Flag } from '@/components/Flag';
 import { matchDayParts } from '@/lib/dates';
 import { IconUsers, LiveDot } from '@/components/Icons';
@@ -45,13 +47,29 @@ export default async function EstadisticasPage({
   params: Promise<{ id: string }>;
 }) {
   const { id } = await params;
-  const supabase = await createClient();
 
-  const [{ data: statsRaw }, { data: consensusRaw }, allMatches] = await Promise.all([
-    supabase.rpc('get_pool_stats', { p_pool_id: id }),
-    supabase.rpc('get_pool_consensus', { p_pool_id: id }),
-    getAllMatches(),
-  ]);
+  // La Polla Global usa los agregados cacheados (iguales para todos);
+  // las pollas privadas consultan sus RPCs con la sesión del usuario.
+  let statsRaw: unknown;
+  let consensusRaw: unknown;
+  let allMatches;
+  if (id === GLOBAL_POOL_ID) {
+    [statsRaw, consensusRaw, allMatches] = await Promise.all([
+      getGlobalStats(),
+      getGlobalConsensus(),
+      getAllMatches(),
+    ]);
+  } else {
+    const supabase = await createClient();
+    const [statsRes, consensusRes, matches] = await Promise.all([
+      supabase.rpc('get_pool_stats', { p_pool_id: id }),
+      supabase.rpc('get_pool_consensus', { p_pool_id: id }),
+      getAllMatches(),
+    ]);
+    statsRaw = statsRes.data;
+    consensusRaw = consensusRes.data;
+    allMatches = matches;
+  }
 
   const stats = (statsRaw ?? {
     members: 0,

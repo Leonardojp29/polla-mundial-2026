@@ -3,7 +3,7 @@ import Image from 'next/image';
 import Link from 'next/link';
 import { createClient } from '@/lib/supabase/server';
 import { getUser } from '@/lib/data';
-import { getAllMatches } from '@/lib/publicData';
+import { getAllMatches, getGlobalConsensus } from '@/lib/publicData';
 import { getStadium } from '@/lib/stadiums';
 import { matchDayParts } from '@/lib/dates';
 import { GROUP_COLOR } from '@/lib/groupColors';
@@ -21,15 +21,6 @@ const STAGE_LABEL: Record<string, string> = {
   sf: 'Semifinal',
   third: 'Tercer puesto',
   final: 'GRAN FINAL',
-};
-
-type ConsensusRow = {
-  match_id: number;
-  home_n: number;
-  draw_n: number;
-  away_n: number;
-  top_score: string | null;
-  total: number;
 };
 
 type PredRow = {
@@ -53,8 +44,8 @@ export async function MatchDetail({ id }: { id: number }) {
   const user = await getUser();
   const started = !!m.kickoff_at && Date.parse(m.kickoff_at) <= Date.now();
 
-  const [{ data: consensusRaw }, { data: myPred }, predsRes] = await Promise.all([
-    supabase.rpc('get_pool_consensus', { p_pool_id: GLOBAL_POOL_ID }),
+  const [consensusRaw, { data: myPred }, predsRes] = await Promise.all([
+    getGlobalConsensus(),
     supabase
       .from('predictions')
       .select('pred_home_score, pred_away_score, points_awarded')
@@ -67,7 +58,7 @@ export async function MatchDetail({ id }: { id: number }) {
       : Promise.resolve({ data: null }),
   ]);
 
-  const consensus = ((consensusRaw ?? []) as ConsensusRow[]).find((c) => c.match_id === id);
+  const consensus = consensusRaw.find((c) => c.match_id === id);
   const preds = (predsRes.data ?? null) as PredRow[] | null;
 
   const stadium = getStadium(m.venue);

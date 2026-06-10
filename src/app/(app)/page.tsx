@@ -2,7 +2,8 @@ import Link from 'next/link';
 import Image from 'next/image';
 import { createClient } from '@/lib/supabase/server';
 import { getUser } from '@/lib/data';
-import { getAllMatches, getTeams } from '@/lib/publicData';
+import { getAllMatches, getTeams, getTopScorers } from '@/lib/publicData';
+import { TopScorers } from '@/components/TopScorers';
 import {
   TournamentExplorer,
   type MatchLite,
@@ -19,7 +20,6 @@ import { getFdTeams } from '@/lib/fd';
 import { esTeamName, normTeamName, TEAM_ALIAS } from '@/lib/teamNames';
 import { TeamsExplorer, type TeamCard } from '@/components/TeamsExplorer';
 import { CalendarList } from '@/components/CalendarList';
-import { toCalendarMatches } from '@/lib/calendar';
 
 const GLOBAL_POOL_ID = '00000000-0000-0000-0000-000000000001';
 
@@ -31,7 +31,7 @@ export default async function HomePage() {
 
   // Solo MIS membresías (la RLS también permite ver las de mis compañeros de
   // polla para el ranking, así que sin este filtro saldría una tarjeta por miembro).
-  const [{ data: memberships }, { data: myPredictions }, allMatches, allTeams, fdTeams] =
+  const [{ data: memberships }, { data: myPredictions }, allMatches, allTeams, fdTeams, scorers] =
     await Promise.all([
       supabase
         .from('memberships')
@@ -45,6 +45,7 @@ export default async function HomePage() {
       getAllMatches(),
       getTeams(),
       getFdTeams(),
+      getTopScorers(),
     ]);
 
   // Escudo oficial por nombre normalizado (football-data → nuestra tabla,
@@ -217,6 +218,12 @@ export default async function HomePage() {
 
       <MatchCenter matches={matchesLite} myPreds={myPreds} />
 
+      {scorers.length > 0 && (
+        <section className="mb-8">
+          <TopScorers scorers={scorers} />
+        </section>
+      )}
+
       <div className="mb-8 flex flex-wrap items-center justify-between gap-4">
         <div>
           <h1 className="text-3xl font-black tracking-tight">Mis pollas</h1>
@@ -303,7 +310,7 @@ export default async function HomePage() {
             calendario para guardarlo en el tuyo.
           </p>
         </div>
-        <CalendarList matches={toCalendarMatches(allMatches)} />
+        <CalendarList matches={matchesLite} />
       </section>
     </>
   );

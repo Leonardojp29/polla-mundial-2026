@@ -4,7 +4,15 @@ import { NextResponse, type NextRequest } from 'next/server';
 // Rutas públicas (sin sesión). El resto exige estar logueado.
 // /api/cron se protege solo (CRON_SECRET). /api/ics son feeds de calendario:
 // los lee el teléfono/Google sin cookies (datos públicos del torneo).
-const PUBLIC_PATHS = ['/login', '/registro', '/recuperar', '/auth', '/api/cron', '/api/ics'];
+const PUBLIC_PATHS = [
+  '/bienvenida',
+  '/login',
+  '/registro',
+  '/recuperar',
+  '/auth',
+  '/api/cron',
+  '/api/ics',
+];
 
 export async function updateSession(request: NextRequest) {
   let supabaseResponse = NextResponse.next({ request });
@@ -38,7 +46,15 @@ export async function updateSession(request: NextRequest) {
 
   if (!user && !isPublic) {
     const url = request.nextUrl.clone();
-    url.pathname = '/login';
+    // La portada para visitantes es la landing; el resto pide login.
+    url.pathname = path === '/' ? '/bienvenida' : '/login';
+    return NextResponse.redirect(url);
+  }
+
+  // Un usuario logueado no necesita la landing.
+  if (user && path === '/bienvenida') {
+    const url = request.nextUrl.clone();
+    url.pathname = '/';
     return NextResponse.redirect(url);
   }
 
