@@ -15,6 +15,9 @@ import { openMatches, missingFor, closeLabel } from '@/lib/missing';
 import { IconLock } from '@/components/Icons';
 import { GlobalBadge } from '@/components/WcBadges';
 import { getStadium } from '@/lib/stadiums';
+import { getFdTeams } from '@/lib/fd';
+import { normTeamName, TEAM_ALIAS } from '@/lib/teamNames';
+import { TeamsExplorer, type TeamCard } from '@/components/TeamsExplorer';
 
 const GLOBAL_POOL_ID = '00000000-0000-0000-0000-000000000001';
 
@@ -26,7 +29,7 @@ export default async function HomePage() {
 
   // Solo MIS membresías (la RLS también permite ver las de mis compañeros de
   // polla para el ranking, así que sin este filtro saldría una tarjeta por miembro).
-  const [{ data: memberships }, { data: myPredictions }, allMatches, allTeams] =
+  const [{ data: memberships }, { data: myPredictions }, allMatches, allTeams, fdTeams] =
     await Promise.all([
       supabase
         .from('memberships')
@@ -39,7 +42,42 @@ export default async function HomePage() {
         .eq('user_id', user!.id),
       getAllMatches(),
       getTeams(),
+      getFdTeams(),
     ]);
+
+  // Escudo oficial por nombre normalizado (football-data → nuestra tabla).
+  const crestByOurNorm = new Map<string, string | null>();
+  for (const t of fdTeams) {
+    const n = normTeamName(t.name);
+    crestByOurNorm.set(TEAM_ALIAS[n] ?? n, t.crest);
+  }
+
+  // Próximo partido de cada selección, en corto: "vs Brasil · jue 14:00".
+  const now = Date.now();
+  const nextLabelFor = (teamId: string): string | null => {
+    const next = allMatches.find(
+      (m) =>
+        m.status === 'scheduled' &&
+        m.kickoff_at &&
+        Date.parse(m.kickoff_at) > now &&
+        (m.home_team_id === teamId || m.away_team_id === teamId),
+    );
+    if (!next) return null;
+    const rival = next.home_team_id === teamId ? next.away : next.home;
+    const rivalLabel = next.home_team_id === teamId ? next.away_label : next.home_label;
+    const d = new Date(next.kickoff_at!);
+    const when = `${d.toLocaleDateString('es-PE', { weekday: 'short', timeZone: 'America/Lima' })} ${d.toLocaleTimeString('es-PE', { hour: '2-digit', minute: '2-digit', hour12: false, timeZone: 'America/Lima' })}`;
+    return `vs ${rival?.name ?? rivalLabel ?? 'por definir'} · ${when}`;
+  };
+
+  const teamCards: TeamCard[] = allTeams.map((t) => ({
+    id: t.id,
+    name: t.name,
+    flag: t.flag_code,
+    group: t.group_letter,
+    crest: crestByOurNorm.get(normTeamName(t.name)) ?? null,
+    next: nextLabelFor(t.id),
+  }));
 
   const teamsLite: TeamLite[] = allTeams.map((t) => ({
     id: t.id,
@@ -241,6 +279,16 @@ export default async function HomePage() {
           </p>
         </div>
         <TournamentExplorer teams={teamsLite} matches={matchesLite} />
+      </section>
+
+      <section className="mt-10">
+        <div className="mb-4">
+          <h2 className="text-2xl font-black tracking-tight">Conoce a las 48 selecciones</h2>
+          <p className="text-sm text-slate-500">
+            Convocatorias oficiales, su camino en el torneo y qué dice tu polla de cada una.
+          </p>
+        </div>
+        <TeamsExplorer teams={teamCards} />
       </section>
     </>
   );

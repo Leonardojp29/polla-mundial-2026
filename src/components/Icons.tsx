@@ -185,6 +185,13 @@ export const IconNext = ({ className }: P) => (
   </I>
 );
 
+export const IconSearch = ({ className }: P) => (
+  <I className={className}>
+    <circle cx="11" cy="11" r="8" />
+    <path d="m21 21-4.3-4.3" />
+  </I>
+);
+
 export const IconX = ({ className }: P) => (
   <I className={className}>
     <path d="M18 6 6 18" />
