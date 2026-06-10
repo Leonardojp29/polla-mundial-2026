@@ -8,7 +8,7 @@ compartes el código con tus amigos.
 
 ## Stack
 
-- **Next.js 16** (App Router, TypeScript, Tailwind v4) — PWA en el roadmap
+- **Next.js 16** (App Router, TypeScript, Tailwind v4)
 - **Supabase** (Postgres + Auth + RLS) — local con Docker en desarrollo
 - Datos del Mundial sembrados desde **OpenFootball** (gratis, sin API key)
 
@@ -121,13 +121,9 @@ node scripts/e2e.mjs   # valida alta de usuario, auto-inscripción, crear/unirse
   con marcador parcial, finales con recálculo de puntos en todas las pollas y
   asignación de equipos a los cruces (`npm run sync` / `sync:dry` / `sync:watch`).
 
+- ✅ **Desplegado en producción**: Supabase Cloud + Vercel (auto-deploy en cada push
+  a `main`).
+
 > **Nota de marca:** el emblema FIFA 2026 es marca registrada de FIFA. Para uso
 > privado entre amigos no hay problema práctico, pero si la app se publica
 > comercialmente se debe reemplazar por un logo propio.
-
-## Siguiente (Fase 5+)
-
-- Deploy: Supabase Cloud + Vercel (código ya en GitHub).
-- Recuperar contraseña (correo de reset).
-- PWA instalable.
-- Pronósticos de otros jugadores visibles tras el kickoff + realtime + estadísticas.
