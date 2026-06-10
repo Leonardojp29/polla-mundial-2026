@@ -1,6 +1,6 @@
 import Link from 'next/link';
 import Image from 'next/image';
-import { getAllMatches, getGlobalStats, getTopScorers } from '@/lib/publicData';
+import { getAllMatches, getTopScorers } from '@/lib/publicData';
 import { getStadium } from '@/lib/stadiums';
 import { matchDayParts } from '@/lib/dates';
 import { Countdown } from '@/components/Countdown';
@@ -14,7 +14,7 @@ import { TrophyBadge } from '@/components/WcBadges';
 export const metadata = {
   title: 'Polla Mundial 2026 — Pronostica el Mundial con tus amigos',
   description:
-    'Predice los 104 partidos del Mundial 2026, arma tu pronóstico maestro y compite en pollas privadas con código. Marcadores en vivo y ranking al instante.',
+    'Predice los 104 partidos del Mundial 2026 y compite en pollas privadas con código. Marcadores en vivo y ranking al instante.',
 };
 
 const STADIUM_STRIP = ['mexico-city', 'new-york', 'monterrey', 'vancouver'] as const;
@@ -80,11 +80,7 @@ function Eyebrow({ children }: { children: React.ReactNode }) {
 }
 
 export default async function BienvenidaPage() {
-  const [allMatches, stats, scorers] = await Promise.all([
-    getAllMatches(),
-    getGlobalStats(),
-    getTopScorers(),
-  ]);
+  const [allMatches, scorers] = await Promise.all([getAllMatches(), getTopScorers()]);
 
   const now = Date.now();
   const firstKickoff = allMatches.find((m) => m.kickoff_at)?.kickoff_at ?? null;
@@ -95,9 +91,6 @@ export default async function BienvenidaPage() {
     .slice(0, 8);
   const ticker = [...live, ...upcoming].slice(0, 8);
 
-  const champions = (stats?.champions ?? []).slice(0, 3);
-  const champTotal = stats?.with_special ?? 0;
-  const maxChamp = champions[0]?.n ?? 0;
 
   return (
     <main className="bg-slate-950 text-white antialiased">
@@ -171,7 +164,7 @@ export default async function BienvenidaPage() {
               className="animate-fade-up mt-6 max-w-md text-base leading-relaxed text-slate-400"
               style={{ '--d': '0.18s' } as React.CSSProperties}
             >
-              Predice los 104 partidos, arma tu pronóstico maestro y compite con tu gente.
+              Predice los 104 partidos y compite con tu gente.
               Marcadores en vivo, puntos al instante, cero hojas de cálculo.
             </p>
 
@@ -356,11 +349,11 @@ export default async function BienvenidaPage() {
             {[
               {
                 t: 'Predice cada partido',
-                d: 'Marcador exacto: 5 puntos. Acertar el resultado: 3. En eliminatorias vale más. Cada partido se bloquea al pitazo inicial: nadie se copia.',
+                d: 'Marcador exacto: 5 puntos · resultado: 2 (fase de grupos). Cada partido se bloquea al pitazo inicial: nadie se copia.',
               },
               {
-                t: 'Arma tu pronóstico maestro',
-                d: 'Campeón, finalista, semifinalistas y goleador antes de que ruede el balón. Hasta 25 puntos por acierto — el que arriesga, gana.',
+                t: 'La apuesta sube por fase',
+                d: 'En cuartos el exacto paga 13, en semis 20 y en la final 25. Las últimas rondas pueden voltear el ranking entero.',
               },
               {
                 t: 'Crea tu polla privada',
@@ -394,44 +387,8 @@ export default async function BienvenidaPage() {
           </h2>
         </Reveal>
         <div className="mt-10 grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
-          {/* Consenso real */}
-          <Reveal className="rounded-3xl border border-white/10 bg-white/[0.03] p-6 transition duration-300 hover:-translate-y-1 hover:border-white/20 lg:row-span-2">
-            <p className="text-[10px] font-black uppercase tracking-widest text-slate-500">
-              En vivo de la Polla Global
-            </p>
-            <h3 className="mt-1 text-lg font-bold">¿Quién será campeón?</h3>
-            {champions.length > 0 && champTotal > 0 ? (
-              <ul className="mt-5 space-y-4">
-                {champions.map((c) => (
-                  <li key={c.name}>
-                    <div className="mb-1.5 flex items-center gap-2 text-sm font-semibold">
-                      <Flag code={c.flag} className="h-4 w-6" />
-                      {c.name}
-                      <span className="ml-auto font-black tabular-nums text-emerald-400">
-                        {Math.round((c.n / champTotal) * 100)}%
-                      </span>
-                    </div>
-                    <div className="h-2 overflow-hidden rounded-full bg-white/5">
-                      <div
-                        className="h-full rounded-full bg-gradient-to-r from-emerald-500 to-teal-400"
-                        style={{ width: `${Math.max((c.n / maxChamp) * 100, 8)}%` }}
-                      />
-                    </div>
-                  </li>
-                ))}
-              </ul>
-            ) : (
-              <p className="mt-5 text-sm text-slate-400">
-                Los pronósticos maestros se revelan aquí cuando arranque el torneo.
-              </p>
-            )}
-            <p className="mt-6 text-xs text-slate-500">
-              ¿No estás de acuerdo?{' '}
-              <Link href="/registro" className="font-bold text-emerald-400 hover:underline">
-                Deja tu pronóstico →
-              </Link>
-            </p>
-          </Reveal>
+          {/* La celda "¿Quién será campeón?" (pronóstico maestro) se quitó al
+              desactivar el maestro — ver historial de git. */}
 
           {/* Marcadores en vivo */}
           <Reveal
@@ -466,7 +423,7 @@ export default async function BienvenidaPage() {
           {/* Post-kickoff */}
           <Reveal
             delay={0.1}
-            className="rounded-3xl border border-white/10 bg-white/[0.03] p-6 transition duration-300 hover:-translate-y-1 hover:border-white/20 lg:col-span-2"
+            className="rounded-3xl border border-white/10 bg-white/[0.03] p-6 transition duration-300 hover:-translate-y-1 hover:border-white/20"
           >
             <div className="flex flex-wrap items-start justify-between gap-4">
               <div className="max-w-sm">

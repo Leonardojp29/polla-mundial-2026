@@ -10,7 +10,8 @@ export function PoolTabs({ poolId }: { poolId: string }) {
   const tabs = [
     { href: `${base}/predicciones`, label: 'Grupos' },
     { href: `${base}/eliminatorias`, label: 'Eliminatorias' },
-    { href: `${base}/maestro`, label: 'Maestro' },
+    // Maestro desactivado (11 jun): la polla es solo de predicciones de partidos.
+    // { href: `${base}/maestro`, label: 'Maestro' },
     { href: `${base}/estadisticas`, label: 'Stats' },
     { href: `${base}/ranking`, label: 'Ranking' },
   ];

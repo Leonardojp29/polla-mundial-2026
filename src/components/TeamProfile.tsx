@@ -3,14 +3,12 @@ import { join } from 'node:path';
 import Image from 'next/image';
 import Link from 'next/link';
 import { notFound } from 'next/navigation';
-import { getTeams, getAllMatches, getGlobalStats, type MatchRow } from '@/lib/publicData';
+import { getTeams, getAllMatches, type MatchRow } from '@/lib/publicData';
 import { findFdTeam, getFdTeamDetail, positionGroup, type PositionGroup } from '@/lib/fd';
 import { getStadium, type StadiumInfo } from '@/lib/stadiums';
 import { matchDayParts } from '@/lib/dates';
 import { GROUP_COLOR } from '@/lib/groupColors';
-import { esTeamName } from '@/lib/teamNames';
 import { Flag } from '@/components/Flag';
-import { TrophyBadge } from '@/components/WcBadges';
 import { LiveDot } from '@/components/Icons';
 import { AddToCalendar } from '@/components/AddToCalendar';
 
@@ -118,7 +116,8 @@ export async function TeamProfile({ id }: { id: string }) {
   const team = teams.find((t) => t.id === id);
   if (!team) notFound();
 
-  const [fdTeam, statsRaw] = await Promise.all([findFdTeam(team.name), getGlobalStats()]);
+  // Maestro desactivado (11 jun): ya no se consulta el dato "la tienen campeona".
+  const fdTeam = await findFdTeam(team.name);
   const detail = fdTeam ? await getFdTeamDetail(fdTeam.id) : null;
   const squad = detail?.squad ?? [];
 
@@ -159,15 +158,6 @@ export async function TeamProfile({ id }: { id: string }) {
     if (existing) existing.games.push(game);
     else stadiums.push({ ...info, games: [game] });
   }
-
-  // ¿Cuántos de la Polla Global la tienen campeona?
-  const stats = (statsRaw ?? {}) as {
-    with_special?: number;
-    champions?: { name: string; n: number }[];
-  };
-  // Los nombres del RPC vienen en inglés (BD); el de team ya está en español.
-  const champPick = stats.champions?.find((c) => esTeamName(c.name) === team.name)?.n ?? 0;
-  const champTotal = stats.with_special ?? 0;
 
   const byPosition = new Map<PositionGroup, typeof squad>();
   for (const player of squad) {
@@ -244,25 +234,8 @@ export async function TeamProfile({ id }: { id: string }) {
         </div>
       </header>
 
-      {/* El dato de la polla */}
-      {champTotal > 0 && (
-        <section className="flex items-center gap-2.5 rounded-xl border border-amber-200 bg-gradient-to-r from-amber-50 to-yellow-50 px-4 py-2">
-          <TrophyBadge className="h-6 w-6" />
-          <p className="text-xs text-amber-900">
-            {champPick > 0 ? (
-              <>
-                <strong>
-                  {champPick} de {champTotal}
-                </strong>{' '}
-                de la Polla Global {champPick === 1 ? 'la tiene' : 'la tienen'} de{' '}
-                <strong>campeona</strong> ({Math.round((champPick / champTotal) * 100)}%).
-              </>
-            ) : (
-              <>Nadie de la Polla Global la tiene de campeona todavía… ¿la sorpresa del torneo?</>
-            )}
-          </p>
-        </section>
-      )}
+      {/* "El dato de la polla" (X la tienen campeona) se quitó al desactivar el
+          pronóstico maestro — ver historial de git para reactivarlo. */}
 
       {/* Estadios donde jugará (con rival y fecha) */}
       {stadiums.length > 0 && (

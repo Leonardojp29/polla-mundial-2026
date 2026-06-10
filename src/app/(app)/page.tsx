@@ -281,7 +281,18 @@ export default async function HomePage() {
         ))}
       </ul>
 
-      <section>
+      <section id="calendario" className="scroll-mt-20">
+        <div className="mb-4">
+          <h2 className="text-2xl font-black tracking-tight">Calendario del Mundial</h2>
+          <p className="text-sm text-slate-500">
+            Los 104 partidos en hora peruana. Toca uno para ver su ficha, o el ícono de
+            calendario para guardarlo en el tuyo.
+          </p>
+        </div>
+        <CalendarList matches={matchesLite} />
+      </section>
+
+      <section className="mt-10">
         <div className="mb-4">
           <h2 className="text-2xl font-black tracking-tight">El torneo de un vistazo</h2>
           <p className="text-sm text-slate-500">
@@ -300,17 +311,6 @@ export default async function HomePage() {
           </p>
         </div>
         <TeamsExplorer teams={teamCards} />
-      </section>
-
-      <section id="calendario" className="mt-10 scroll-mt-20">
-        <div className="mb-4">
-          <h2 className="text-2xl font-black tracking-tight">Calendario del Mundial</h2>
-          <p className="text-sm text-slate-500">
-            Los 104 partidos en hora peruana. Toca uno para ver su ficha, o el ícono de
-            calendario para guardarlo en el tuyo.
-          </p>
-        </div>
-        <CalendarList matches={matchesLite} />
       </section>
     </>
   );

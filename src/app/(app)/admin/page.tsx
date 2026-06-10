@@ -123,7 +123,8 @@ export default async function AdminPage({
         </p>
       )}
 
-      {/* Pronósticos maestros */}
+      {/* Pronósticos maestros — DESACTIVADO (11 jun): la polla es solo de
+          predicciones de partidos. Se reactiva descomentando este bloque.
       <section className="mb-8 rounded-2xl border border-violet-200 bg-violet-50/60 p-5">
         <h2 className="flex items-center gap-2 font-bold text-violet-900"><IconStar className="h-4 w-4 text-violet-500" /> Pronósticos maestros</h2>
         <p className="mt-1 text-sm text-violet-700">
@@ -145,6 +146,7 @@ export default async function AdminPage({
           </button>
         </form>
       </section>
+      */}
 
       <div className="space-y-8">
         {[...byDay.entries()].map(([day, dayMatches]) => (

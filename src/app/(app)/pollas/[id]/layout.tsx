@@ -8,15 +8,7 @@ import { PoolTabs } from '@/components/PoolTabs';
 import { Avatar } from '@/components/Avatar';
 import { MissingAlert } from '@/components/MissingAlert';
 import { openMatches, missingFor, closeLabel } from '@/lib/missing';
-import {
-  IconCheck,
-  IconClock,
-  IconLock,
-  IconTarget,
-  IconTrendingUp,
-  IconUsers,
-  RankBadge,
-} from '@/components/Icons';
+import { IconLock, IconUsers, RankBadge } from '@/components/Icons';
 import { GlobalBadge, TrophyBadge } from '@/components/WcBadges';
 
 type LeaderboardRow = {
@@ -92,15 +84,23 @@ export default async function PoolLayout({
             <span className="flex items-center gap-1">
               <IconUsers className="h-3.5 w-3.5" /> {members} jugador{members === 1 ? '' : 'es'}
             </span>
+            {/* Maestro desactivado: el deadline ya no se muestra.
             {deadline && (
               <span className="flex items-center gap-1">
                 <IconClock className="h-3.5 w-3.5" /> pronóstico maestro cierra: {deadline}
               </span>
-            )}
+            )} */}
           </p>
         </div>
         <PoolTabs poolId={pool.id} />
       </header>
+
+      {/* En móvil el código va ARRIBA del contenido (en escritorio, en el sidebar). */}
+      {pool.type === 'private' && pool.code && (
+        <div className="mb-4 lg:hidden">
+          <ShareCode code={pool.code} />
+        </div>
+      )}
 
       <MissingAlert
         pools={[
@@ -117,28 +117,45 @@ export default async function PoolLayout({
         <div className="min-w-0">{children}</div>
 
         <aside className="space-y-4 lg:sticky lg:top-20">
-          {pool.type === 'private' && pool.code && <ShareCode code={pool.code} />}
+          {pool.type === 'private' && pool.code && (
+            <div className="hidden lg:block">
+              <ShareCode code={pool.code} />
+            </div>
+          )}
 
           <div className="rounded-2xl border border-slate-200 bg-white p-4 text-sm shadow-sm">
             <h3 className="mb-2 font-semibold">Cómo se juega</h3>
-            <ul className="space-y-1.5 text-slate-500">
-              <li className="flex items-center gap-2">
-                <IconTarget className="h-4 w-4 shrink-0 text-emerald-600" />
-                <span>Marcador exacto: <strong className="text-slate-700">5 pts</strong></span>
-              </li>
-              <li className="flex items-center gap-2">
-                <IconCheck className="h-4 w-4 shrink-0 text-emerald-600" />
-                <span>Acertar el resultado: <strong className="text-slate-700">3 pts</strong></span>
-              </li>
-              <li className="flex items-center gap-2">
-                <IconTrendingUp className="h-4 w-4 shrink-0 text-emerald-600" />
-                <span>En eliminatorias los puntos suben por ronda.</span>
-              </li>
-              <li className="flex items-center gap-2">
-                <IconLock className="h-4 w-4 shrink-0 text-emerald-600" />
-                <span>Cada partido se cierra a su hora de inicio.</span>
-              </li>
-            </ul>
+            <table className="w-full text-xs">
+              <thead>
+                <tr className="text-left text-[10px] uppercase tracking-wide text-slate-400">
+                  <th className="py-1 font-medium">Etapa</th>
+                  <th className="py-1 text-right font-medium">Resultado</th>
+                  <th className="py-1 text-right font-medium">Marcador</th>
+                </tr>
+              </thead>
+              <tbody className="text-slate-600">
+                {[
+                  { e: 'Grupos / 16vos / 8vos', r: 2, m: 5 },
+                  { e: 'Cuartos de final', r: 5, m: 13 },
+                  { e: 'Semifinal', r: 10, m: 20 },
+                  { e: '3er y 4to / Final', r: 12, m: 25 },
+                ].map((row) => (
+                  <tr key={row.e} className="border-t border-slate-100">
+                    <td className="py-1.5">{row.e}</td>
+                    <td className="py-1.5 text-right font-bold tabular-nums text-slate-700">
+                      {row.r} pts
+                    </td>
+                    <td className="py-1.5 text-right font-black tabular-nums text-emerald-700">
+                      {row.m} pts
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+            <p className="mt-2 flex items-center gap-2 border-t border-slate-100 pt-2 text-slate-500">
+              <IconLock className="h-4 w-4 shrink-0 text-emerald-600" />
+              <span>Cada partido se cierra a su hora de inicio.</span>
+            </p>
           </div>
 
           {/* Mini-ranking siempre visible */}
