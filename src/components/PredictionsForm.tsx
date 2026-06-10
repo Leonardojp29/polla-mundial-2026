@@ -39,13 +39,14 @@ function Stepper({
   ariaLabel: string;
 }) {
   const n = value === '' ? null : Number(value);
+  // Compacto en celulares chicos (390px); tamaño completo desde sm.
   const btn =
-    'flex h-9 w-9 items-center justify-center rounded-full border text-lg font-bold transition select-none ' +
+    'flex h-7 w-7 sm:h-9 sm:w-9 items-center justify-center rounded-full border text-base sm:text-lg font-bold transition select-none ' +
     'border-slate-200 text-slate-500 hover:border-emerald-400 hover:text-emerald-600 ' +
     'disabled:opacity-30 disabled:hover:border-slate-200 disabled:hover:text-slate-500';
 
   return (
-    <div className="flex items-center gap-1.5">
+    <div className="flex items-center gap-1 sm:gap-1.5">
       <button
         type="button"
         tabIndex={-1}
@@ -64,7 +65,7 @@ function Stepper({
         inputMode="numeric"
         placeholder="·"
         aria-label={`Goles de ${ariaLabel}`}
-        className="h-11 w-11 rounded-xl border border-slate-300 bg-white text-center text-xl font-black tabular-nums outline-none focus:border-emerald-500 focus:ring-2 focus:ring-emerald-200 disabled:bg-slate-50 disabled:text-slate-400"
+        className="h-9 w-9 rounded-lg text-lg sm:h-11 sm:w-11 sm:rounded-xl sm:text-xl border border-slate-300 bg-white text-center font-black tabular-nums outline-none focus:border-emerald-500 focus:ring-2 focus:ring-emerald-200 disabled:bg-slate-50 disabled:text-slate-400"
       />
       <button
         type="button"
@@ -133,9 +134,9 @@ function MatchCard({ m, poolId }: { m: MatchVM; poolId: string }) {
       </div>
 
       {/* Cuerpo: equipo · centro · equipo */}
-      <div className="grid grid-cols-[1fr_auto_1fr] items-start gap-2">
+      <div className="grid grid-cols-[1fr_auto_1fr] items-start gap-1.5 sm:gap-2">
         <div className="flex flex-col items-center gap-1.5">
-          <Flag code={m.home.flagCode} className="h-8 w-12" />
+          <Flag code={m.home.flagCode} className="h-7 w-10 sm:h-8 sm:w-12" />
           <span className="text-center text-sm font-bold leading-tight">{m.home.name}</span>
           {!m.finished && (
             <Stepper
@@ -148,10 +149,10 @@ function MatchCard({ m, poolId }: { m: MatchVM; poolId: string }) {
           )}
         </div>
 
-        <div className="min-w-24 px-1 pt-1 text-center">
+        <div className="min-w-14 px-0.5 pt-1 text-center sm:min-w-24 sm:px-1">
           {m.finished ? (
             <>
-              <p className="text-3xl font-black tabular-nums">
+              <p className="text-2xl font-black tabular-nums sm:text-3xl">
                 {m.realHome} – {m.realAway}
               </p>
               <p className="mt-1 text-[11px] text-slate-400">
@@ -174,14 +175,16 @@ function MatchCard({ m, poolId }: { m: MatchVM; poolId: string }) {
                   Hoy
                 </p>
               )}
-              <p className="text-3xl font-black tabular-nums text-slate-800">{m.time}</p>
+              <p className="text-2xl font-black tabular-nums text-slate-800 sm:text-3xl">
+                {m.time}
+              </p>
               <p className="text-[10px] uppercase tracking-wide text-slate-300">hora Perú · vs</p>
             </>
           )}
         </div>
 
         <div className="flex flex-col items-center gap-1.5">
-          <Flag code={m.away.flagCode} className="h-8 w-12" />
+          <Flag code={m.away.flagCode} className="h-7 w-10 sm:h-8 sm:w-12" />
           <span className="text-center text-sm font-bold leading-tight">{m.away.name}</span>
           {!m.finished && (
             <Stepper

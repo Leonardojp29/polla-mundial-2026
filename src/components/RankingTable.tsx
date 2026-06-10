@@ -5,6 +5,7 @@ import { createClient } from '@/lib/supabase/client';
 import { Avatar } from '@/components/Avatar';
 import { Flag } from '@/components/Flag';
 import { LiveDot, RankBadge } from '@/components/Icons';
+import { esTeamName } from '@/lib/teamNames';
 
 export type RankingRow = {
   user_id: string;
@@ -64,7 +65,7 @@ function Breakdown({ rows }: { rows: BreakdownRow[] }) {
       {rows.map((r) => (
         <li key={r.match_id} className="flex items-center gap-3 px-4 py-2 text-sm">
           <span className="flex min-w-0 flex-1 items-center justify-end gap-1.5">
-            <span className="truncate text-right">{r.home_name}</span>
+            <span className="truncate text-right">{esTeamName(r.home_name)}</span>
             <Flag code={r.home_flag} className="h-3.5 w-5" />
           </span>
           <span className="shrink-0 text-center">
@@ -79,7 +80,7 @@ function Breakdown({ rows }: { rows: BreakdownRow[] }) {
           </span>
           <span className="flex min-w-0 flex-1 items-center gap-1.5">
             <Flag code={r.away_flag} className="h-3.5 w-5" />
-            <span className="truncate">{r.away_name}</span>
+            <span className="truncate">{esTeamName(r.away_name)}</span>
           </span>
           <span className="w-20 shrink-0 text-right">
             <PointsChip points={r.points} live={r.status === 'live'} />

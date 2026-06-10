@@ -1,3 +1,4 @@
+import Link from 'next/link';
 import { Flag } from '@/components/Flag';
 import { AutoRefresh } from '@/components/AutoRefresh';
 import { matchDayParts } from '@/lib/dates';
@@ -13,9 +14,10 @@ function MatchChip({ m, pred }: { m: MatchLite; pred?: { h: number; a: number } 
   const finished = m.status === 'finished';
 
   return (
-    <div
-      className={`flex min-w-[230px] flex-1 flex-col rounded-2xl border bg-white p-4 shadow-sm sm:min-w-[260px] ${
-        live ? 'border-red-200 ring-2 ring-red-100' : 'border-slate-200'
+    <Link
+      href={`/partidos/${m.id}`}
+      className={`flex min-w-[230px] flex-1 flex-col rounded-2xl border bg-white p-4 shadow-sm transition hover:-translate-y-0.5 hover:shadow-md sm:min-w-[260px] ${
+        live ? 'border-red-200 ring-2 ring-red-100' : 'border-slate-200 hover:border-emerald-300'
       }`}
     >
       <div className="flex items-center justify-between gap-3">
@@ -70,7 +72,7 @@ function MatchChip({ m, pred }: { m: MatchLite; pred?: { h: number; a: number } 
           <span className="text-slate-400">Sin pronóstico</span>
         )}
       </p>
-    </div>
+    </Link>
   );
 }
 
@@ -125,6 +127,12 @@ export function MatchCenter({
           )}
         </h2>
         <span className="h-px flex-1 bg-slate-200" />
+        <a
+          href="#calendario"
+          className="text-xs font-semibold text-emerald-700 hover:underline"
+        >
+          Calendario completo ↓
+        </a>
       </div>
       <div className="flex flex-wrap gap-3">
         {today.length > 0 ? (

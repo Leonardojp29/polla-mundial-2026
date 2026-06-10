@@ -1,4 +1,5 @@
 import { createClient } from '@supabase/supabase-js';
+import { esTeamName } from '@/lib/teamNames';
 
 // Datos PÚBLICOS del torneo (equipos/partidos): no dependen del usuario, así que
 // se consultan sin cookies y se cachean en el Data Cache de Next (60 s, tag
@@ -39,6 +40,16 @@ const MATCH_SELECT =
   'id, stage, group_letter, kickoff_at, venue, status, home_score, away_score, home_label, away_label, home_team_id, away_team_id, ' +
   'home:teams!matches_home_team_id_fkey(name, flag_code), away:teams!matches_away_team_id_fkey(name, flag_code)';
 
+// La BD guarda los nombres en inglés (así empareja el sync con football-data);
+// aquí se traducen al español para TODO el front y los .ics.
+function esMatch(m: MatchRow): MatchRow {
+  return {
+    ...m,
+    home: m.home ? { ...m.home, name: esTeamName(m.home.name) } : null,
+    away: m.away ? { ...m.away, name: esTeamName(m.away.name) } : null,
+  };
+}
+
 export async function getGroupMatches(): Promise<MatchRow[]> {
   const { data, error } = await publicClient
     .from('matches')
@@ -46,7 +57,7 @@ export async function getGroupMatches(): Promise<MatchRow[]> {
     .eq('stage', 'group')
     .order('kickoff_at');
   if (error) throw error;
-  return (data ?? []) as unknown as MatchRow[];
+  return ((data ?? []) as unknown as MatchRow[]).map(esMatch);
 }
 
 export async function getAllMatches(): Promise<MatchRow[]> {
@@ -55,7 +66,7 @@ export async function getAllMatches(): Promise<MatchRow[]> {
     .select(MATCH_SELECT)
     .order('kickoff_at');
   if (error) throw error;
-  return (data ?? []) as unknown as MatchRow[];
+  return ((data ?? []) as unknown as MatchRow[]).map(esMatch);
 }
 
 export type Team = {
@@ -72,5 +83,5 @@ export async function getTeams(): Promise<Team[]> {
     .order('group_letter')
     .order('name');
   if (error) throw error;
-  return (data ?? []) as Team[];
+  return ((data ?? []) as Team[]).map((t) => ({ ...t, name: esTeamName(t.name) }));
 }

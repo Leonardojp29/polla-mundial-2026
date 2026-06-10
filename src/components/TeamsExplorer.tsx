@@ -95,9 +95,8 @@ export function TeamsExplorer({ teams }: { teams: TeamCard[] }) {
             ) : (
               <Flag code={t.flag} className="h-9 w-14" />
             )}
-            <span className="flex min-w-0 max-w-full items-center gap-1.5">
-              <Flag code={t.flag} className="h-2.5 w-4" />
-              <span className="truncate text-sm font-bold text-white">{t.name}</span>
+            <span className="max-w-full truncate text-center text-sm font-bold text-white">
+              {t.name}
             </span>
             <span className="w-full truncate text-center text-[11px] text-emerald-200/70">
               {t.next ?? 'Sin próximos partidos'}

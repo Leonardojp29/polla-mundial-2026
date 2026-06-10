@@ -1,7 +1,7 @@
 // Datos de selecciones desde football-data.org (tier gratis: 10 req/min).
 // Todo va al Data Cache de Next con revalidación de 24 h, así las fichas no
 // gastan cuota: 48 squads = 48 peticiones por día como máximo.
-import { normTeamName, TEAM_ALIAS } from '@/lib/teamNames';
+import { esTeamName, normTeamName, TEAM_ALIAS } from '@/lib/teamNames';
 
 const FD = 'https://api.football-data.org/v4';
 
@@ -27,14 +27,19 @@ export async function getFdTeams(): Promise<FdTeamLite[]> {
   }));
 }
 
-// Empareja nuestro nombre de equipo (tabla teams) con el id de football-data.
+// Empareja nuestro nombre de equipo (en inglés o ya traducido al español)
+// con el id de football-data.
 export async function findFdTeam(ourTeamName: string): Promise<FdTeamLite | null> {
   const teams = await getFdTeams();
   const wanted = normTeamName(ourTeamName);
   return (
     teams.find((t) => {
       const n = normTeamName(t.name);
-      return n === wanted || TEAM_ALIAS[n] === wanted;
+      return (
+        n === wanted ||
+        TEAM_ALIAS[n] === wanted ||
+        normTeamName(esTeamName(t.name)) === wanted
+      );
     }) ?? null
   );
 }

@@ -1,6 +1,7 @@
 import { existsSync } from 'node:fs';
 import { join } from 'node:path';
 import Image from 'next/image';
+import Link from 'next/link';
 import { notFound } from 'next/navigation';
 import { createClient } from '@/lib/supabase/server';
 import { getTeams, getAllMatches, type MatchRow } from '@/lib/publicData';
@@ -8,9 +9,11 @@ import { findFdTeam, getFdTeamDetail, positionGroup, type PositionGroup } from '
 import { getStadium, type StadiumInfo } from '@/lib/stadiums';
 import { matchDayParts } from '@/lib/dates';
 import { GROUP_COLOR } from '@/lib/groupColors';
+import { esTeamName } from '@/lib/teamNames';
 import { Flag } from '@/components/Flag';
 import { TrophyBadge } from '@/components/WcBadges';
 import { LiveDot } from '@/components/Icons';
+import { AddToCalendar } from '@/components/AddToCalendar';
 
 const GLOBAL_POOL_ID = '00000000-0000-0000-0000-000000000001';
 
@@ -65,7 +68,11 @@ function TeamMatchRow({ m, teamId }: { m: MatchRow; teamId: string }) {
       : null;
 
   return (
-    <li className="flex items-center gap-2.5 rounded-xl border border-slate-200 bg-white px-3 py-2 shadow-sm">
+    <li>
+      <Link
+        href={`/partidos/${m.id}`}
+        className="flex items-center gap-2.5 rounded-xl border border-slate-200 bg-white px-3 py-2 shadow-sm transition hover:border-emerald-300 hover:shadow-md"
+      >
       <span className="w-16 shrink-0 text-[10px] font-bold uppercase tracking-wide text-slate-400">
         {STAGE_LABEL[m.stage]}
         {m.stage === 'group' && m.group_letter ? ` ${m.group_letter}` : ''}
@@ -98,6 +105,7 @@ function TeamMatchRow({ m, teamId }: { m: MatchRow; teamId: string }) {
           </span>
         )}
       </span>
+      </Link>
     </li>
   );
 }
@@ -164,7 +172,8 @@ export async function TeamProfile({ id }: { id: string }) {
     with_special?: number;
     champions?: { name: string; n: number }[];
   };
-  const champPick = stats.champions?.find((c) => c.name === team.name)?.n ?? 0;
+  // Los nombres del RPC vienen en inglés (BD); el de team ya está en español.
+  const champPick = stats.champions?.find((c) => esTeamName(c.name) === team.name)?.n ?? 0;
   const champTotal = stats.with_special ?? 0;
 
   const byPosition = new Map<PositionGroup, typeof squad>();
@@ -210,16 +219,13 @@ export async function TeamProfile({ id }: { id: string }) {
             <Flag code={team.flag_code} className="h-10 w-15" />
           )}
           <div className="min-w-0">
-            <div className="flex flex-wrap items-center gap-2">
-              {team.group_letter && (
-                <span
-                  className={`rounded-full px-2 py-0.5 text-[10px] font-black uppercase tracking-widest text-white ${groupColor}`}
-                >
-                  Grupo {team.group_letter}
-                </span>
-              )}
-              <Flag code={team.flag_code} className="h-3.5 w-5" />
-            </div>
+            {team.group_letter && (
+              <span
+                className={`inline-block rounded-full px-2 py-0.5 text-[10px] font-black uppercase tracking-widest text-white ${groupColor}`}
+              >
+                Grupo {team.group_letter}
+              </span>
+            )}
             <h1 className="text-2xl font-black leading-tight tracking-tight sm:text-3xl">
               {team.name}
             </h1>
@@ -307,7 +313,15 @@ export async function TeamProfile({ id }: { id: string }) {
       {/* Camino + Convocatoria */}
       <div className="grid items-start gap-3.5 lg:grid-cols-[minmax(0,5fr)_minmax(0,7fr)]">
         <section>
-          <h2 className="mb-2 text-sm font-black tracking-tight">Su camino en el Mundial</h2>
+          <div className="mb-2 flex items-center justify-between gap-2">
+            <h2 className="text-sm font-black tracking-tight">Su camino en el Mundial</h2>
+            <AddToCalendar
+              mode="subscribe"
+              icsPath={`/api/ics/equipo/${id}`}
+              label="Seguir su calendario"
+              align="right"
+            />
+          </div>
           <ul className="space-y-1.5">
             {matches.map((m) => (
               <TeamMatchRow key={m.id} m={m} teamId={id} />

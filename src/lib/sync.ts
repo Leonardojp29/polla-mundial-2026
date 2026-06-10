@@ -43,13 +43,18 @@ export async function runSyncCycle(): Promise<SyncSummary> {
   );
 
   // 1) Nuestro estado actual
-  const [{ data: teams }, { data: dbMatches }] = await Promise.all([
+  const [teamsRes, matchesRes] = await Promise.all([
     svc.from('teams').select('id, name'),
     svc
       .from('matches')
       .select('id, stage, kickoff_at, status, home_score, away_score, home_team_id, away_team_id'),
   ]);
-  if (!teams || !dbMatches) throw new Error('No se pudo leer la BD');
+  const teams = teamsRes.data;
+  const dbMatches = matchesRes.data;
+  if (!teams || !dbMatches) {
+    const detail = teamsRes.error?.message ?? matchesRes.error?.message ?? 'sin detalle';
+    throw new Error(`No se pudo leer la BD (${detail}) — revisa SUPABASE_SERVICE_ROLE_KEY en Vercel`);
+  }
   const teamByNorm = new Map(teams.map((t) => [norm(t.name), t.id]));
   const resolveTeam = (fdName: string | null | undefined): string | null => {
     const n = norm(fdName);

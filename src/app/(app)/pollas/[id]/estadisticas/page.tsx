@@ -3,6 +3,7 @@ import { getAllMatches } from '@/lib/publicData';
 import { Flag } from '@/components/Flag';
 import { matchDayParts } from '@/lib/dates';
 import { IconUsers, LiveDot } from '@/components/Icons';
+import { esTeamName } from '@/lib/teamNames';
 import { BallBadge, TrophyBadge } from '@/components/WcBadges';
 
 type Stats = {
@@ -95,7 +96,9 @@ export default async function EstadisticasPage({
             {stats.champions.map((c) => (
               <li key={c.name} className="flex items-center gap-2">
                 <Flag code={c.flag} className="h-5 w-7 shrink-0" />
-                <span className="w-32 shrink-0 truncate text-sm font-semibold">{c.name}</span>
+                <span className="w-32 shrink-0 truncate text-sm font-semibold">
+                  {esTeamName(c.name)}
+                </span>
                 <div className="flex-1">
                   <Bar
                     value={c.n}

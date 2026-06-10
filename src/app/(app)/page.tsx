@@ -16,8 +16,10 @@ import { IconLock } from '@/components/Icons';
 import { GlobalBadge } from '@/components/WcBadges';
 import { getStadium } from '@/lib/stadiums';
 import { getFdTeams } from '@/lib/fd';
-import { normTeamName, TEAM_ALIAS } from '@/lib/teamNames';
+import { esTeamName, normTeamName, TEAM_ALIAS } from '@/lib/teamNames';
 import { TeamsExplorer, type TeamCard } from '@/components/TeamsExplorer';
+import { CalendarList } from '@/components/CalendarList';
+import { toCalendarMatches } from '@/lib/calendar';
 
 const GLOBAL_POOL_ID = '00000000-0000-0000-0000-000000000001';
 
@@ -45,11 +47,13 @@ export default async function HomePage() {
       getFdTeams(),
     ]);
 
-  // Escudo oficial por nombre normalizado (football-data → nuestra tabla).
+  // Escudo oficial por nombre normalizado (football-data → nuestra tabla,
+  // indexado también por el nombre en español que devuelve publicData).
   const crestByOurNorm = new Map<string, string | null>();
   for (const t of fdTeams) {
     const n = normTeamName(t.name);
     crestByOurNorm.set(TEAM_ALIAS[n] ?? n, t.crest);
+    crestByOurNorm.set(normTeamName(esTeamName(t.name)), t.crest);
   }
 
   // Próximo partido de cada selección, en corto: "vs Brasil · jue 14:00".
@@ -289,6 +293,17 @@ export default async function HomePage() {
           </p>
         </div>
         <TeamsExplorer teams={teamCards} />
+      </section>
+
+      <section id="calendario" className="mt-10 scroll-mt-20">
+        <div className="mb-4">
+          <h2 className="text-2xl font-black tracking-tight">Calendario del Mundial</h2>
+          <p className="text-sm text-slate-500">
+            Los 104 partidos en hora peruana. Toca uno para ver su ficha, o el ícono de
+            calendario para guardarlo en el tuyo.
+          </p>
+        </div>
+        <CalendarList matches={toCalendarMatches(allMatches)} />
       </section>
     </>
   );
