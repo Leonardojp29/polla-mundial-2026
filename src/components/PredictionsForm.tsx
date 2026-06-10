@@ -10,6 +10,8 @@ export type MatchVM = {
   id: number;
   locked: boolean;
   day: string; // "Miércoles, 17 de junio"
+  dayKey?: string; // "2026-06-17" (para filtrar por fecha)
+  g?: string; // letra del grupo (para filtrar por grupo)
   time: string; // "12:00" (hora Colombia)
   isToday: boolean;
   venue: string | null;

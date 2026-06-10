@@ -178,6 +178,12 @@ export const IconBulb = ({ className }: P) => (
   </I>
 );
 
+export const IconChevronDown = ({ className }: P) => (
+  <I className={className}>
+    <path d="m6 9 6 6 6-6" />
+  </I>
+);
+
 export const IconNext = ({ className }: P) => (
   <I className={className}>
     <path d="m6 17 5-5-5-5" />

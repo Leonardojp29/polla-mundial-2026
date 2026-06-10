@@ -4,6 +4,7 @@ import { useActionState } from 'react';
 import Link from 'next/link';
 import { register, type AuthState } from '@/lib/actions/auth';
 import { CountrySelect } from '@/components/CountrySelect';
+import { GoogleButton } from '@/components/GoogleButton';
 
 const field =
   'w-full rounded-lg border border-slate-300 px-3 py-2 outline-none focus:border-emerald-500 focus:ring-2 focus:ring-emerald-200';
@@ -95,6 +96,14 @@ export default function RegistroPage() {
         >
           {pending ? 'Creando…' : 'Registrarme'}
         </button>
+
+        <div className="flex items-center gap-3 text-xs text-slate-400">
+          <span className="h-px flex-1 bg-slate-200" />
+          o
+          <span className="h-px flex-1 bg-slate-200" />
+        </div>
+
+        <GoogleButton label="Registrarme con Google" />
       </form>
 
       <p className="mt-4 text-center text-sm text-slate-600">

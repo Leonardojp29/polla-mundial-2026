@@ -1,54 +1,9 @@
 'use server';
 
 import { revalidatePath } from 'next/cache';
-import { redirect } from 'next/navigation';
 import { createClient } from '@/lib/supabase/server';
 
 export type ProfileState = { ok?: string; error?: string };
-
-// Onboarding tras entrar con Google: completa usuario/país y define contraseña
-// (así también puede iniciar sesión con correo + contraseña).
-export async function completeProfile(
-  _prev: ProfileState,
-  formData: FormData,
-): Promise<ProfileState> {
-  const supabase = await createClient();
-  const {
-    data: { user },
-  } = await supabase.auth.getUser();
-  if (!user) return { error: 'Sesión expirada. Vuelve a iniciar sesión.' };
-
-  const first_name = String(formData.get('first_name') ?? '').trim();
-  const last_name = String(formData.get('last_name') ?? '').trim();
-  const username = String(formData.get('username') ?? '').trim();
-  const country = String(formData.get('country') ?? '').trim();
-  const password = String(formData.get('password') ?? '');
-  const confirm = String(formData.get('confirm') ?? '');
-
-  if (!first_name || !username || !country) {
-    return { error: 'Nombre, usuario y país son obligatorios.' };
-  }
-  if (password.length < 6) return { error: 'La contraseña debe tener al menos 6 caracteres.' };
-  if (password !== confirm) return { error: 'Las contraseñas no coinciden.' };
-
-  const { error: pwError } = await supabase.auth.updateUser({ password });
-  if (pwError && pwError.code !== 'same_password') {
-    return { error: `No se pudo definir la contraseña: ${pwError.message}` };
-  }
-
-  const { error } = await supabase
-    .from('profiles')
-    .update({ first_name, last_name, username, country })
-    .eq('id', user.id);
-
-  if (error) {
-    if (error.message.includes('username')) return { error: 'Ese nombre de usuario ya está en uso.' };
-    return { error: `No se pudo guardar: ${error.message}` };
-  }
-
-  revalidatePath('/', 'layout');
-  redirect('/');
-}
 
 export async function updateProfile(_prev: ProfileState, formData: FormData): Promise<ProfileState> {
   const supabase = await createClient();

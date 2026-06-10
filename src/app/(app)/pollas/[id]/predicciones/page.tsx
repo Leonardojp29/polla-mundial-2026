@@ -2,9 +2,10 @@ import { createClient } from '@/lib/supabase/server';
 import { getGroupMatches } from '@/lib/publicData';
 import { matchDayParts } from '@/lib/dates';
 import { type MatchVM } from '@/components/PredictionsForm';
-import { GroupsPredictions, type GroupMeta } from '@/components/GroupsPredictions';
+import { GroupsPredictions, type GroupMeta, type DayMeta } from '@/components/GroupsPredictions';
 
 const GROUPS = ['A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'I', 'J', 'K', 'L'];
+const TZ = 'America/Lima';
 
 export default async function PrediccionesPage({
   params,
@@ -35,39 +36,37 @@ export default async function PrediccionesPage({
     ]),
   );
 
-  // Grupo inicial: el de la URL o el del próximo partido por jugarse
-  // (así "los partidos de hoy" te reciben al entrar).
-  let initialGroup = GROUPS.includes((sp.grupo ?? '').toUpperCase())
+  // ?grupo=C en la URL fuerza el modo grupo (lo usan enlaces internos).
+  const initialGroup = GROUPS.includes((sp.grupo ?? '').toUpperCase())
     ? (sp.grupo as string).toUpperCase()
     : null;
-  const nowMs = Date.now();
-  if (!initialGroup) {
-    const next = matches.find(
-      (m) => m.kickoff_at && new Date(m.kickoff_at).getTime() > nowMs && m.group_letter,
-    );
-    initialGroup = next?.group_letter ?? 'A';
-  }
 
-  // VMs de los 72 partidos + metadatos por grupo, todo en una pasada.
-  const matchesByGroup: Record<string, MatchVM[]> = {};
+  const nowMs = Date.now();
+
+  // VMs de los 72 partidos + metadatos por grupo y por día, en una pasada.
+  const vms: MatchVM[] = [];
   const flagsByGroup = new Map<string, Map<string, string | null>>();
-  const counts = new Map<string, { done: number; total: number }>();
+  const groupCounts = new Map<string, { done: number; total: number }>();
   for (const g of GROUPS) {
-    matchesByGroup[g] = [];
     flagsByGroup.set(g, new Map());
-    counts.set(g, { done: 0, total: 0 });
+    groupCounts.set(g, { done: 0, total: 0 });
   }
+  const dayMeta = new Map<string, DayMeta>();
 
   for (const m of matches) {
     const g = m.group_letter ?? '';
-    if (!(g in matchesByGroup)) continue;
+    if (!groupCounts.has(g)) continue;
     const p = preds.get(m.id);
     const { day, time, isToday } = matchDayParts(m.kickoff_at);
+    const d = m.kickoff_at ? new Date(m.kickoff_at) : null;
+    const dayKey = d ? d.toLocaleDateString('en-CA', { timeZone: TZ }) : 'tbd';
 
-    matchesByGroup[g].push({
+    vms.push({
       id: m.id,
       locked: !m.kickoff_at || new Date(m.kickoff_at).getTime() <= nowMs,
       day,
+      dayKey,
+      g,
       time,
       isToday,
       venue: m.venue,
@@ -81,27 +80,59 @@ export default async function PrediccionesPage({
       points: p?.pts ?? null,
     });
 
-    const c = counts.get(g)!;
+    const c = groupCounts.get(g)!;
     c.total++;
     if (p) c.done++;
     const flags = flagsByGroup.get(g)!;
     if (m.home) flags.set(m.home.name, m.home.flag_code);
     if (m.away) flags.set(m.away.name, m.away.flag_code);
+
+    if (d) {
+      if (!dayMeta.has(dayKey)) {
+        dayMeta.set(dayKey, {
+          key: dayKey,
+          wk: d
+            .toLocaleDateString('es-PE', { timeZone: TZ, weekday: 'short' })
+            .replace('.', '')
+            .toUpperCase(),
+          dn: d.toLocaleDateString('es-PE', { timeZone: TZ, day: '2-digit' }),
+          mon: d.toLocaleDateString('es-PE', { timeZone: TZ, month: 'short' }).replace('.', ''),
+          isToday,
+          done: 0,
+          total: 0,
+        });
+      }
+      const dm = dayMeta.get(dayKey)!;
+      dm.total++;
+      if (p) dm.done++;
+    }
   }
 
   const meta: GroupMeta[] = GROUPS.map((g) => ({
     g,
-    done: counts.get(g)!.done,
-    total: counts.get(g)!.total,
+    done: groupCounts.get(g)!.done,
+    total: groupCounts.get(g)!.total,
     flags: [...flagsByGroup.get(g)!.values()].slice(0, 4),
   }));
+
+  const days = [...dayMeta.values()].sort((a, b) => a.key.localeCompare(b.key));
+
+  // Fecha inicial: hoy si hay partidos hoy; si no, la próxima con partidos
+  // pendientes; si la fase ya terminó, todas.
+  const todayKey = new Date().toLocaleDateString('en-CA', { timeZone: TZ });
+  const initialDay =
+    days.find((d) => d.key === todayKey)?.key ??
+    days.find((d) => d.key > todayKey)?.key ??
+    'all';
 
   return (
     <GroupsPredictions
       poolId={id}
-      initialGroup={initialGroup}
+      matches={vms}
       meta={meta}
-      matchesByGroup={matchesByGroup}
+      days={days}
+      initialDay={initialDay}
+      initialGroup={initialGroup}
     />
   );
 }

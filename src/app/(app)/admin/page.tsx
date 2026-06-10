@@ -1,3 +1,4 @@
+import Link from 'next/link';
 import { redirect } from 'next/navigation';
 import { getProfile } from '@/lib/data';
 import { getAllMatches, getTeams, type MatchRow, type Team } from '@/lib/publicData';
@@ -83,7 +84,15 @@ export default async function AdminPage({
   return (
     <>
       <header className="mb-6">
-        <h1 className="flex items-center gap-2.5 text-3xl font-black tracking-tight"><IconSettings className="h-7 w-7 text-slate-500" /> Panel admin</h1>
+        <div className="flex flex-wrap items-center justify-between gap-3">
+          <h1 className="flex items-center gap-2.5 text-3xl font-black tracking-tight"><IconSettings className="h-7 w-7 text-slate-500" /> Panel admin</h1>
+          <Link
+            href="/admin/usuarios"
+            className="rounded-xl border border-slate-200 bg-white px-4 py-2 text-sm font-semibold text-slate-600 transition hover:border-emerald-300 hover:text-emerald-700"
+          >
+            Ver usuarios registrados →
+          </Link>
+        </div>
         <p className="mt-1 text-sm text-slate-500">
           Carga los resultados reales: al guardar, se recalculan los puntos de todas las pollas
           al instante. · <strong>{finished}/104</strong> partidos finalizados

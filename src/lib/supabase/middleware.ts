@@ -6,6 +6,7 @@ import { NextResponse, type NextRequest } from 'next/server';
 // los lee el teléfono/Google sin cookies (datos públicos del torneo).
 const PUBLIC_PATHS = [
   '/bienvenida',
+  '/invitacion',
   '/login',
   '/registro',
   '/recuperar',

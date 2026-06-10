@@ -3,6 +3,8 @@
 import { redirect } from 'next/navigation';
 import { headers } from 'next/headers';
 import { createClient } from '@/lib/supabase/server';
+import { consumePendingInvite } from '@/lib/invite';
+import { ensureEnvAdmin } from '@/lib/adminBootstrap';
 
 export type AuthState = { error?: string; ok?: string };
 
@@ -48,10 +50,12 @@ export async function login(_prev: AuthState, formData: FormData): Promise<AuthS
   const email = String(formData.get('email') ?? '').trim();
   const password = String(formData.get('password') ?? '');
 
-  const { error } = await supabase.auth.signInWithPassword({ email, password });
+  const { data, error } = await supabase.auth.signInWithPassword({ email, password });
   if (error) return { error: 'Correo o contraseña incorrectos.' };
 
-  redirect('/');
+  await ensureEnvAdmin(data.user?.id, data.user?.email);
+  const invitedPool = await consumePendingInvite(supabase);
+  redirect(invitedPool ? `/pollas/${invitedPool}/predicciones` : '/');
 }
 
 export async function register(_prev: AuthState, formData: FormData): Promise<AuthState> {
@@ -70,14 +74,16 @@ export async function register(_prev: AuthState, formData: FormData): Promise<Au
     return { error: 'La contraseña debe tener al menos 6 caracteres.' };
   }
 
-  const { error } = await supabase.auth.signUp({
+  const { data, error } = await supabase.auth.signUp({
     email,
     password,
     options: { data: { first_name, last_name, username, country } },
   });
   if (error) return { error: error.message };
 
-  redirect('/');
+  await ensureEnvAdmin(data.user?.id, data.user?.email);
+  const invitedPool = await consumePendingInvite(supabase);
+  redirect(invitedPool ? `/pollas/${invitedPool}/predicciones` : '/');
 }
 
 export async function signOut() {
