@@ -4,8 +4,11 @@ import { useState } from 'react';
 import { createClient } from '@/lib/supabase/client';
 import { Avatar } from '@/components/Avatar';
 import { Flag } from '@/components/Flag';
+import { Pagination } from '@/components/Pagination';
 import { LiveDot, RankBadge } from '@/components/Icons';
 import { esTeamName } from '@/lib/teamNames';
+
+const PER_PAGE = 20;
 
 export type RankingRow = {
   user_id: string;
@@ -104,6 +107,11 @@ export function RankingTable({
 }) {
   const [openId, setOpenId] = useState<string | null>(null);
   const [cache, setCache] = useState<Record<string, BreakdownRow[] | 'loading'>>({});
+  const [page, setPage] = useState(1);
+
+  const pages = Math.max(1, Math.ceil(rows.length / PER_PAGE));
+  const safePage = Math.min(page, pages);
+  const pageRows = rows.slice((safePage - 1) * PER_PAGE, safePage * PER_PAGE);
 
   async function toggle(userId: string) {
     if (openId === userId) {
@@ -134,14 +142,14 @@ export function RankingTable({
           </tr>
         </thead>
         <tbody>
-          {rows.map((row, i) => {
+          {pageRows.map((row, i) => {
             const open = openId === row.user_id;
             const detail = cache[row.user_id];
             return (
               <FragmentRow
                 key={row.user_id}
                 row={row}
-                index={i}
+                index={(safePage - 1) * PER_PAGE + i}
                 isMe={row.user_id === currentUserId}
                 open={open}
                 detail={detail}
@@ -151,6 +159,11 @@ export function RankingTable({
           })}
         </tbody>
       </table>
+      {rows.length > PER_PAGE && (
+        <div className="border-t border-slate-100 px-4 pb-3">
+          <Pagination page={safePage} total={rows.length} perPage={PER_PAGE} onChange={setPage} />
+        </div>
+      )}
     </section>
   );
 }
